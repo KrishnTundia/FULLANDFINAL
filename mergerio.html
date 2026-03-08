@@ -1,0 +1,2665 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ronin Club Premium Player</title>
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;800&display=swap" rel="stylesheet">
+  <script src="https://code.jquery.com/jquery-3.6.0.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  
+  <style>
+    /* --- GLOBAL STYLES --- */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      text-decoration: none;
+      scroll-behavior: smooth;
+    }
+
+    body {
+      background: #000;
+      color: #fff;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      overflow: hidden; 
+      width: 100vw;
+      height: 100vh;
+    }
+
+    /* --- ONE-PAGE ROUTING STRUCTURE --- */
+    .page-section {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100vw;
+      height: 100vh;
+      display: none;
+      z-index: 1;
+    }
+    .page-section.active-page {
+      display: block;
+    }
+
+    /* --- VIDEO BACKGROUND (Inside Home) --- */
+    .videobg {
+      position: absolute;
+      top: 0; left: 0; 
+      width: 100%; height: 100%;
+      z-index: 0;
+      overflow: hidden;
+    }
+
+    .video {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      object-fit: cover;
+    }
+
+    /* 80% Absolute Center Text - STRICT SINGLE LINE */
+    .videobg h2 {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 1; 
+      color: rgba(255, 255, 255); 
+      width: 80vw; 
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-family: 'Poppins', sans-serif;
+      font-weight: 800;
+      font-size: 11vw; 
+      white-space: nowrap; 
+      line-height: 1;
+      pointer-events: none;
+      margin: 0;
+    }
+
+    /* --- NAVBAR STYLES --- */
+    .navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: transparent;
+      padding: 1.5rem 2rem;
+      position: fixed;
+      z-index: 2;
+      width: 100%;
+      top: 0;
+      left: 0;
+      transition: all 0.3s ease;
+    }
+
+    .navbar::before {
+      content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0;
+      background: transparent; backdrop-filter: none; border-bottom: none; transition: all 0.3s ease; pointer-events: none;
+    }
+
+    .nav-left { display: flex; align-items: center; z-index: 3; }
+    .nav-right { display: flex; align-items: center; }
+
+    .icon {
+      display: none;
+      font-size: 24px;
+      cursor: pointer;
+      color: #fff;
+      background: transparent url('fabric-1-light.png');
+      background-color: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(8px) brightness(1.5);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      padding: 10px 15px;
+      border-radius: 200px;
+      transition: 0.2s ease;
+      z-index: 4;
+    }
+    .icon:hover { background-color: rgba(255, 255, 255, 0.35); }
+
+    /* Desktop Layout structure */
+    .nav-links {
+      display: flex;
+      align-items: center;
+      justify-content: space-between; 
+      width: 100%;
+    }
+
+    /* Container for the buttons themselves (Outer Background) */
+    .nav-links ul {
+      display: flex;
+      list-style: none;
+      gap: 10px;
+      background: transparent url('fabric-1-light.png');
+      background-color: rgba(255, 255, 255, 0.1); 
+      backdrop-filter: blur(12px) brightness(1.2);
+      border: 1px solid rgba(255, 255, 255, 0.2); 
+      padding: 8px ;
+      border-radius: 40px;
+    }
+    
+    /* The individual buttons (Inner Background) */
+    .nav-links ul li a {
+      background: transparent url('fabric-1-light.png');
+      background-color: rgba(255, 255, 255, 0.15); 
+      border: 1px solid rgba(255, 255, 255, 0.2); 
+      color: #fff;
+      font-weight: 500;
+      font-size: 15px;
+      padding: 10px 24px;
+      border-radius: 30px;
+      display: inline-block;
+      transition: transform 0.2s ease; 
+      letter-spacing: 0.5px;
+      cursor: pointer;
+    }
+
+    .nav-links ul li a:hover {
+      transform: scale(1.05);
+    }
+
+    /* Brighter state for currently active page */
+    .nav-links ul li a.active-nav {
+      background-color: rgba(255, 255, 255, 0.4); 
+      border: 1px solid rgba(255, 255, 255, 0.6);
+      box-shadow: 0 0 10px rgba(255,255,255,0.2);
+    }
+
+    /* Frosted Wrapper for Profile/Google Sign-In */
+    .profile {
+      display: flex;
+      align-items: center;
+      background: transparent url('fabric-1-light.png');
+      background-color: rgba(255, 255, 255, 0.15); 
+      backdrop-filter: blur(10px) brightness(1.2);
+      border: 1px solid rgba(255, 255, 255, 0.3); 
+      padding: 6px 6px;
+      border-radius: 40px;
+    }
+    .profile a { display: flex; align-items: center; text-decoration: none; }
+    .profile img { width: 40px; height: auto; border-radius: 50%; border: 2px solid #fff; transition: 0.3s; }
+    .profile h1 { font-size: 1.1rem; font-weight: 600; color: white; margin-left: 1rem; transition: 0.25s; }
+    .profile a:hover h1 { color: #ddd; }
+    .profile a:hover img { transform: scale(1.1); }
+
+    /* GLOBAL SITE AUDIO MUTE BUTTON */
+    .global-mute-btn {
+      position: fixed;
+      bottom: 30px; right: 30px;
+      width: 60px; height: 60px; font-size: 24px;
+      border-radius: 50%;
+      background: transparent url('fabric-1-light.png');
+      background-color: rgba(255, 255, 255, 0.15); 
+      backdrop-filter: blur(10px) brightness(1.2);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      color: #fff; cursor: pointer;
+      display: flex; justify-content: center; align-items: center;
+      transition: all 0.2s ease;
+      z-index: 6;
+      outline: none;
+    }
+    .global-mute-btn:hover { transform: scale(1.1); }
+
+
+/* --- ENHANCED WOOD/BAMBOO TRANSITION STYLES --- */
+.transition-overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  pointer-events: none;
+  z-index: 9999;
+  overflow: hidden; 
+  visibility: hidden; /* Fixes the resize peeking bug */
+}
+
+.transition-overlay.is-active {
+  visibility: visible;
+}
+
+/* Bamboo Borders - Added realistic depth gradient and shadowing */
+.bamboo {
+  position: absolute;
+  background: linear-gradient(90deg, #6b7a35 0%, #8f9b53 50%, #6b7a35 100%); 
+  border-color: #4a5423;
+  border-style: solid;
+  border-width: 0px; /* Hidden until animation starts to prevent artifacts */
+  transition: all 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+  z-index: 10001; /* Strictly on top of logs */
+  box-shadow: inset 0 0 10px rgba(0,0,0,0.4);
+}
+
+#bamboo-left   { top: 0; left: 0; width: 25px; height: 0; }
+#bamboo-right  { bottom: 0; right: 0; width: 25px; height: 0; }
+#bamboo-top    { top: 0; left: 0; width: 0; height: 25px; }
+#bamboo-bottom { bottom: 0; right: 0; width: 0; height: 25px; }
+
+/* Wooden Logs - Overlapping density to ensure zero gaps */
+#logs-container {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  z-index: 10000;
+  overflow: hidden;
+}
+
+.log-bar {
+  position: absolute;
+  width: 100vw;
+  height: 9vh; /* Slightly oversized to overlap gaps */
+  background: linear-gradient(180deg, #3b281f 0%, #5c4033 50%, #3b281f 100%);
+  box-shadow: inset 0 2px 5px rgba(255,255,255,0.1), 0 5px 15px rgba(0,0,0,0.6);
+  transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.log-even { transform: translateX(105vw); }
+.log-odd  { transform: translateX(-105vw); }
+.log-active { transform: translateX(0) !important; }
+
+
+    /* --- MUSIC PLAYER STYLES (STRICTLY UNTOUCHED) --- */
+    .myusicbg { position: fixed; bottom: 30px; left: 30px; z-index: 6; }
+    .player-lard { border-radius: 20px; display: flex; flex-direction: row; width: 550px; height: 160px; background: transparent; box-shadow: 0 10px 40px rgba(0,0,0,0.2); position: relative; color: #fff; }
+    .player-card { border-radius: 20px 0px 0px 20px; height: 100%; width: auto; aspect-ratio: 16 / 9; flex-shrink: 0; background: #000; position: relative; overflow: hidden; transition: aspect-ratio 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+    .player-nard { border-radius: 0px 20px 20px 0px; flex: 1; height: 100%; background: rgba(5, 40, 46, 0.2) url('fabric-1-light.png'); backdrop-filter: blur(8px) brightness(1) saturate(1.5); display: flex; flex-direction: column; justify-content: center; position: relative; overflow: hidden; }
+    .video-wrapper { position: absolute; top: 0; left: 0; width: 100%; height: 100%; overflow: hidden; }
+    #player { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; border: none; }
+    .click-catcher { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 5; cursor: pointer; }
+    .video-blur-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(5, 40, 46, 0.4) url('fabric-1-light.png'); backdrop-filter: blur(12px) brightness(0.9) saturate(1.5); opacity: 0; transition: opacity 0.3s ease; pointer-events: none; z-index: 6; }
+    .video-blur-overlay.paused { opacity: 1; }
+    .overlay-controls { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; opacity: 0; transition: all 0.2s ease; z-index: 7; pointer-events: none; }
+    .playlist-toggle-btn { position: absolute; top: 10px; right: 10px; width: 32px; height: 32px; border-radius: 50%; background: transparent url('fabric-1-light.png'); background-color: rgba(255, 255, 255, 0.15); backdrop-filter: blur(8px) brightness(1.5); border: 1px solid rgba(255, 255, 255, 0.3); display: flex; justify-content: center; align-items: center; color: #fff; font-size: 14px; cursor: pointer; z-index: 7; transition: all 0.2s ease; opacity: 0; pointer-events: none; }
+    .playlist-toggle-btn:hover { background-color: rgba(255, 255, 255, 0.35); transform: scale(1.1); }
+    .overlay-controls.show, .video-wrapper:hover .overlay-controls, .video-wrapper.controls-awake .overlay-controls { opacity: 1; pointer-events: auto; }
+    .overlay-controls.show ~ .playlist-toggle-btn, .video-wrapper:hover .playlist-toggle-btn, .video-wrapper.controls-awake .playlist-toggle-btn { opacity: 1; pointer-events: auto; }
+    .ctrl-btn { border-radius: 50%; background: transparent url('fabric-1-light.png'); background-color: rgba(255, 255, 255, 0.15); backdrop-filter: blur(8px) brightness(1) saturate(1.5); display: flex; justify-content: center; align-items: center; color: #fff; transition: all 0.2s ease; flex-shrink: 0; cursor: pointer; border: 1px solid rgba(255, 255, 255, 0.3); }
+    .ctrl-btn.small { width: 32px; height: 32px; }
+    .ctrl-btn.small i { font-size: 14px; }
+    .ctrl-btn.large { width: 48px; height: 48px; }
+    .ctrl-btn.large i { font-size: 18px; transform: translateX(1px); }
+    .ctrl-btn.large.paused i { transform: translateX(0px); }
+    .ctrl-btn:hover { background-color: rgba(255, 255, 255, 0.35); transform: scale(1.1); }
+    .controls-bar { display: flex; align-items: center; padding: 12px 20px 0px 20px; width: 100%; }
+    .info-container { width: 100%; overflow: hidden; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+    .track-title-wrapper, .track-author-wrapper { width: 100%; overflow: hidden; white-space: nowrap; position: relative; mask-image: linear-gradient(to right, transparent, black 2%, black 96%, transparent); -webkit-mask-image: linear-gradient(to right, transparent, black 2%, black 96%, transparent); }
+    #titleLink, #authorLink { color: inherit; text-decoration: none; cursor: pointer; display: inline-block; }
+    #titleLink:hover, #authorLink:hover { text-decoration: underline; text-underline-offset: 2px; }
+    #title { font-weight: bold; font-size: 15px; }
+    #author { font-size: 13px; color: rgba(255, 255, 255, 0.85); }
+    .controls-car { display: flex; align-items: center; gap: 8px; flex-direction: column; width: 100%; padding-top: 5px; }
+    .controls-car1, .controls-car2 { display: flex; align-items: center; flex-direction: row; width: 100%; }
+    .controls-car1 { padding: 5px 20px; gap: 15px; }
+    .controls-car2 { padding: 0px 20px 12px 20px; gap: 10px; }
+    .bttn { border-radius: 50%; background-image: url('fabric-1-light.png'); background-color: rgba(255, 255, 255, 0.15); backdrop-filter: blur(8px) brightness(1) saturate(1.5); border: 1px solid rgba(255, 255, 255, 0.3); color: #fff; font-size: 14px; cursor: pointer; transition: all 0.2s ease; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; outline: none; flex-shrink: 0; }
+    .bttn:hover { background-color: rgba(255, 255, 255, 0.35); transform: scale(1.1); }
+    .time { font-size: 12px; font-weight: 500; min-width: 35px; text-align: center; }
+    .custom-slider { position: relative; width: 100%; height: 24px; display: flex; align-items: center; cursor: pointer; touch-action: none; }
+    .custom-slider-track { position: absolute; width: 100%; height: 6px; background: rgba(255, 255, 255, 0.35); border-radius: 3px; box-shadow: inset 0 1px 2px rgba(0,0,0,0.2); }
+    .custom-slider-fill { position: absolute; height: 6px; background: #fff; border-radius: 3px; width: 0%; transition: width 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); }
+    .custom-slider-thumb { position: absolute; width: 18px; height: 18px; border-radius: 50%; background: transparent url('fabric-1-light.png'); background-color: rgba(255, 255, 255, 0.8); backdrop-filter: blur(8px) brightness(1.5); border: 1px solid rgba(255, 255, 255, 0.9); left: 0%; transform: translateX(-50%); transition: left 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); box-shadow: 0 2px 6px rgba(0,0,0,0.3); }
+    .custom-slider.dragging .custom-slider-fill, .custom-slider.dragging .custom-slider-thumb { transition: none; }
+    .playlist-panel { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(5, 40, 46, 0.95); backdrop-filter: blur(20px); z-index: 8; display: flex; flex-direction: column; opacity: 0; visibility: hidden; pointer-events: none; transition: opacity 0.3s ease, visibility 0.3s ease; border-radius: 20px; overflow: hidden; }
+    .playlist-panel.show { opacity: 1; visibility: visible; pointer-events: auto; }
+    .playlist-header { display: flex; justify-content: space-between; align-items: center; padding: 12px 20px; border-bottom: 1px solid rgba(255,255,255,0.15); }
+    .playlist-header h3 { font-size: 15px; font-weight: 600; margin: 0; color: #fff; }
+    .playlist-header i { font-size: 18px; cursor: pointer; transition: transform 0.2s; color: #fff; }
+    .playlist-header i:hover { transform: scale(1.2); }
+    .playlist-items { flex: 1; overflow-y: auto; padding: 10px; }
+    .playlist-items::-webkit-scrollbar { width: 6px; }
+    .playlist-items::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.3); border-radius: 3px; }
+    .playlist-item { display: flex; gap: 12px; padding: 8px 10px; border-radius: 10px; cursor: pointer; transition: background 0.2s; align-items: center; border: none; }
+    .playlist-item:hover { background: rgba(255,255,255,0.15); }
+    .playlist-item.active { background: rgba(255,255,255,0.25); border: none; }
+    .pl-thumb { position: relative; width: 64px; height: 36px; border-radius: 6px; overflow: hidden; flex-shrink: 0; background: #000; box-shadow: 0 2px 5px rgba(0,0,0,0.3); }
+    .pl-thumb img { width: 100%; height: 100%; object-fit: cover; }
+    .pl-duration { position: absolute; bottom: 2px; right: 2px; background: rgba(0,0,0,0.8); font-size: 9px; padding: 2px 4px; border-radius: 4px; display: flex; align-items: center; gap: 3px; color: #fff;}
+    .pl-info { flex: 1; overflow: hidden; display: flex; flex-direction: column; justify-content: center; mask-image: linear-gradient(to right, black 90%, transparent); -webkit-mask-image: linear-gradient(to right, black 90%, transparent); }
+    .pl-title { display: inline-block; white-space: nowrap; font-size: 13px; font-weight: bold; color: #fff; }
+    .pl-author { display: inline-block; white-space: nowrap; font-size: 11px; color: rgba(255,255,255,0.75); margin-top: 2px; }
+
+/* --- THE MORPHING LOGO --- */
+#main-brand-authority {
+  position: fixed;
+  /* Above video, below mobile dropdown (5000) and below transitions (4000) */
+  z-index: 1; 
+  font-family: 'Poppins', sans-serif;
+  font-weight: 800;
+  text-align: center;
+  pointer-events: none;
+  white-space: nowrap;
+  text-transform: uppercase;
+  left: 50%;
+  top: 50%;
+  transform: translate3d(-50%, -50%, 0) scale(1);
+  will-change: transform, top, left;
+  backface-visibility: hidden;
+  transition: transform 1.2s cubic-bezier(0.19, 1, 0.22, 1), 
+              top 1.2s cubic-bezier(0.19, 1, 0.22, 1), 
+              left 1.2s cubic-bezier(0.19, 1, 0.22, 1);
+  width: 80vw;
+  font-size: 11vw;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+/* HOME STATE (Big & Centered) */
+.brand-home-mode {
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 80vw;
+  font-size: 11vw;
+  color: rgba(255, 255, 255);
+}
+
+/* NAVBAR STATE (Small & Pinned) */
+.brand-nav-mode {
+  top: 3.5rem !important;
+  left: 50% !important;
+  transform: translate3d(-50%, -50%, 0) scale(0.3) !important; 
+  color: rgba(255, 255, 255, 1) !important;
+  z-index: 1;
+}
+
+@media screen and (max-width: 920px) {
+  .brand-nav-mode {
+  top: 3.5rem !important;
+  left: 57.5% !important;
+  transform: translate3d(-50%, -50%, 0) scale(0.3) !important; 
+  color: rgba(255, 255, 255, 1) !important;
+  z-index: 1;
+}
+}
+
+    /* --- MOBILE RESPONSIVE --- */
+    @media screen and (max-width: 768px) {
+      .icon { display: block; }
+      
+  .brand-nav-mode {
+    left: auto !important;
+    right: 2rem !important; 
+    /* Made it bigger as requested (0.22) */
+    transform: translate3d(0, -50%, 0) scale(0.22) !important;
+    transform-origin: right center;
+    z-index: 1;
+  }
+  
+  /* Ensure it stays BEHIND the mobile menu dropdown */
+  #main-brand-authority.brand-nav-mode {
+    z-index: 1;
+  }
+
+  .nav-links {
+    display: flex !important; /* Always flex but hidden via transform */
+    visibility: hidden;
+    opacity: 0;
+    transform: translateY(-100%); /* Glides from top */
+    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1), 
+                opacity 0.5s ease, 
+                visibility 0.5s;
+    width: 100vw;
+    position: fixed;
+    top: 0; left: 0;
+    background: rgba(5, 40, 46, 0.8) url('fabric-1-light.png');
+    backdrop-filter: blur(25px);
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    z-index: 11; /* Strictly on top of everything */
+  }
+
+  .nav-links.active {
+    visibility: visible;
+    opacity: 1;
+    transform: translateY(0);
+    overflow-y: scroll;
+    z-index: 11;
+  }
+      
+      .nav-links ul {
+        flex-direction: column;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 20px;
+        background: none;
+        border: none;
+        backdrop-filter: none;
+      }
+
+      .myusicbg {
+        position: relative;
+        bottom: auto; left: auto;
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        margin-top: 30px;
+        z-index: 6;
+      }
+
+      .player-lard { flex-direction: column; width: 280px; height: auto; }
+      .player-card { width: 100%; height: auto; border-radius: 20px 20px 0 0; }
+      .player-nard { width: 100%; border-radius: 0 0 20px 20px; padding: 15px 0; }
+
+      .global-mute-btn {
+        position: absolute;
+        top: 20px; right: 20px;
+        bottom: auto; left: auto;
+        width: 45px; height: 45px; font-size: 18px;
+        z-index: 6;
+      }
+    }
+
+    /* --- GLOBAL CONTINUOUS VIDEO BACKGROUND --- */
+    .global-video-bg {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      z-index: 0; /* Deepest layer behind everything */
+      overflow: hidden;
+      pointer-events: none;
+    }
+    .global-video-bg video {
+      width: 100%; height: 100%;
+      object-fit: cover;
+    }
+
+    /* Update Home Text Centering */
+    #home h2 {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 1; 
+      color: rgba(255, 255, 255); 
+      width: 80vw; 
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-family: 'Poppins', sans-serif;
+      font-weight: 800;
+      font-size: 11vw; 
+      white-space: nowrap; 
+      line-height: 1;
+      pointer-events: none;
+      margin: 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="global-video-bg">
+  <video src="anime.mp4" type="video/mp4" autoplay loop muted playsinline id="bgVideoContent"></video>
+  </div>
+
+  <audio id="thumpSnd" src="https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3" preload="auto"></audio>
+  <audio id="thunkSnd" src="https://assets.mixkit.co/active_storage/sfx/2042/2042-preview.mp3" preload="auto"></audio>
+
+  <div class="transition-overlay" id="transitionOverlay">
+    <div class="bamboo" id="bamboo-left"></div>
+    <div class="bamboo" id="bamboo-right"></div>
+    <div class="bamboo" id="bamboo-top"></div>
+    <div class="bamboo" id="bamboo-bottom"></div>
+    <div id="logs-container"></div>
+  </div>
+
+<div id="main-brand-authority" class="brand-home-mode">RONIN CLUB</div>
+
+<nav class="navbar" id="mainNav">
+    <div class="nav-left">
+      <a href="javascript:void(0);" class="icon" id="menuHamburger">
+        <i class="fas fa-bars"></i>
+      </a>
+    </div>
+
+    <div class="nav-center-placeholder"></div>
+
+    <div id="navLinks" class="nav-links">
+      <ul class="nav-pills-container">
+        <li><a onclick="navigateSPA('home', this)" class="nav-btn active-nav">Home</a></li>
+        <li><a onclick="navigateSPA('shop', this)" class="nav-btn">Shop</a></li>
+        <li><a onclick="navigateSPA('about', this)" class="nav-btn">About</a></li>
+      </ul>
+
+      
+<section class="profile" id="profileSection">
+    
+    <div id="customGoogleBtn" class="theme-google-btn-wrapper">
+        <div class="theme-google-btn-ui">
+            <svg version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+                <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"></path>
+                <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"></path>
+                <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"></path>
+                <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"></path>
+                <path fill="none" d="M0 0h48v48H0z"></path>
+            </svg>
+            <span>Continue with Google</span>
+        </div>
+        
+        <div id="signInBtn" class="google-btn-hidden"></div>
+    </div>
+
+    <a id="googleInfo" href="javascript:void(0);" onclick="navigateSPA('account', null)" style="display:none;">
+        <img id="googlePic" alt="Profile">
+        <div class="name-marquee-wrapper" id="googleNameWrapper">
+            <span id="googleName"></span>
+        </div>
+    </a>
+
+</section>
+
+      <button id="globalMuteBtn" class="global-mute-btn">
+        <i class="fas fa-volume-xmark"></i>
+      </button>
+
+      <div class="myusicbg" id="musicPlayerWrapper">
+        <div class="player-bard">
+          <div class="player-lard">
+            
+            <div class="player-card" id="playerCard">
+              <div class="video-wrapper" id="videoWrapper">
+                <div class="player" id="player"></div>
+                <div class="video-blur-overlay" id="blurOverlay"></div>
+                <div class="click-catcher" id="clickCatcher"></div>
+
+                <div class="overlay-controls" id="overlayControls">
+                  <div class="ctrl-btn small" id="prevBtn"><i class="fas fa-backward-step"></i></div>
+                  <div class="ctrl-btn large" id="overlayPlay"><i class="fas fa-play" id="playIcon"></i></div>
+                  <div class="ctrl-btn small" id="nextBtn"><i class="fas fa-forward-step"></i></div>
+                </div>
+                
+                <div class="playlist-toggle-btn" id="openPlaylistBtn"><i class="fas fa-list"></i></div>
+              </div>
+            </div>
+
+            <div class="player-nard">
+              <div class="controls-bar">
+                <div class="info-container">
+                  <div class="track-title-wrapper" id="titleWrapper">
+                    <a href="#" target="_blank" id="titleLink"><span id="title"></span></a>
+                  </div>
+                  <div class="track-author-wrapper" id="authorWrapper">
+                    <a href="#" target="_blank" id="authorLink"><span id="author"></span></a>
+                  </div>
+                </div>
+              </div>
+
+              <div class="controls-car">
+                <div class="controls-car1">
+                  <button id="muteBtn" class="bttn"><i class="fas fa-volume-high"></i></button>
+                  <div class="custom-slider" id="volumeSlider">
+                    <div class="custom-slider-track"></div>
+                    <div class="custom-slider-fill"></div>
+                    <div class="custom-slider-thumb"></div>
+                  </div>
+                </div>
+
+                <div class="controls-car2">
+                  <span class="time" id="currentTime">0:00</span>
+                  <div class="custom-slider" id="progressSlider">
+                    <div class="custom-slider-track"></div>
+                    <div class="custom-slider-fill"></div>
+                    <div class="custom-slider-thumb"></div>
+                  </div>
+                  <span class="time" id="duration">0:00</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="playlist-panel" id="playlistPanel">
+              <div class="playlist-header">
+                <h3>Next Up</h3>
+                <i class="fas fa-times" id="closePlaylistBtn"></i>
+              </div>
+              <div class="playlist-items" id="playlistItems"></div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+      
+    </div>
+  </nav>
+
+  <section id="home" class="page-section active-page">
+  </section>
+
+<style>/* --- UPDATED PROFILE WRAPPER --- */
+.profile { 
+    display: flex; 
+    align-items: center; 
+    /* Background properties removed from the wrapper to apply directly to the buttons */
+}
+
+/* --- THEMED GOOGLE BUTTON --- */
+.theme-google-btn-wrapper {
+    position: relative;
+    display: flex;
+    cursor: pointer;
+    border-radius: 40px;
+    overflow: hidden; /* Contains the invisible iframe */
+}
+
+.theme-google-btn-ui {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(255, 255, 255, 0.15) url('fabric-1-light.png');
+    backdrop-filter: blur(10px) brightness(1.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    padding: 8px 24px;
+    border-radius: 40px;
+    color: #fff;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+}
+
+.theme-google-btn-wrapper:hover .theme-google-btn-ui {
+    background: rgba(255, 255, 255, 0.25);
+    transform: scale(1.05);
+}
+
+.theme-google-btn-ui svg {
+    width: 20px;
+    height: 20px;
+}
+
+/* Forces the official iframe to cover the custom button completely invisibly */
+.google-btn-hidden {
+    position: absolute;
+    top: -5px; left: -5px; right: -5px; bottom: -5px;
+    opacity: 0; /* Fully invisible */
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Ensures the clickable area is massively scaled inside the invisible container */
+.google-btn-hidden iframe {
+    transform: scale(2); 
+    transform-origin: center;
+    cursor: pointer;
+}</style>
+<script>function googleSignOut() {
+      document.getElementById('googleInfo').style.display = "none";
+      document.getElementById('customGoogleBtn').style.display = "flex"; // Update this line
+      window.localStorage.removeItem('user');
+    }
+
+    function displayUser() {
+      document.getElementById('googleInfo').style.display = "flex";
+      document.getElementById('googlePic').src = user.img;
+      document.getElementById('googleName').innerText = user.name;
+      document.getElementById('customGoogleBtn').style.display = "none"; // Update this line
+
+      // Assuming you added the marquee function from the previous prompt
+      bindProfileMarquee('googleNameWrapper', 'googleName'); 
+    }
+
+    window.onload = function () {
+      google.accounts.id.initialize({
+        client_id: "594234124010-23ugaco82t1moqsuuco1nahdi8sv0adf.apps.googleusercontent.com",
+        callback: handleCredentialResponse
+      });
+      google.accounts.id.renderButton(
+        document.getElementById("signInBtn"),
+        // Added 'width: 300' so the invisible button spans wide enough to catch clicks
+        { theme: "outline", size: "large", shape: "pill", type: "standard", width: 300 }
+      );
+      
+      if(localStorage.getItem('user')) { 
+        user = JSON.parse(localStorage.getItem('user')); 
+        displayUser(); 
+      }
+    }</script>
+    <style id="account-styles">
+    #account {
+        position: absolute; top: 0; left: 0; width: 100vw; height: 100vh;
+        overflow-y: auto; overflow-x: hidden; z-index: 10; 
+        padding-top: 120px; padding-bottom: 250px; 
+        scrollbar-width: none; display: none; color: #fff; box-sizing: border-box;
+    }
+    #account.active-page { display: block; }
+    #account::-webkit-scrollbar { display: none; }
+
+    .account-master-container {
+        width: 100%; max-width: 1200px;
+        margin: 0 auto; padding: 0 30px;
+        display: flex; flex-direction: column; gap: 40px;
+    }
+
+    /* Top Profile Card */
+    .account-profile-card {
+        background: rgba(5, 40, 46, 0.2) url('fabric-1-light.png');
+        backdrop-filter: blur(12px) brightness(1) saturate(1.5);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 20px; padding: 30px;
+        display: flex; align-items: center; justify-content: space-between;
+        flex-wrap: wrap; gap: 20px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    }
+
+    .acc-user-info { display: flex; align-items: center; gap: 20px; flex: 1; min-width: 250px; }
+    .acc-avatar {
+        width: 80px; height: 80px; border-radius: 50%;
+        border: 2px solid #fff; object-fit: cover; background: rgba(0,0,0,0.5);
+    }
+    .acc-details { display: flex; flex-direction: column; gap: 5px; }
+    .acc-details h2 { font-size: 1.5rem; font-weight: 800; text-transform: uppercase; margin: 0; line-height: 1.1; }
+    .acc-details p { font-size: 0.9rem; color: rgba(255,255,255,0.7); margin: 0; }
+
+    .acc-stats-wrapper { display: flex; gap: 40px; align-items: center; }
+    .acc-stat-box { display: flex; flex-direction: column; align-items: center; gap: 5px; }
+    .acc-stat-box .stat-label { font-size: 0.8rem; font-weight: 700; color: rgba(255,255,255,0.7); letter-spacing: 1px; }
+    .acc-stat-box .stat-val { font-size: 1.2rem; font-weight: 800; color: #fff; }
+
+    .acc-signout-btn {
+        padding: 10px 25px; border-radius: 30px; background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.4); color: #fff; font-weight: 800; font-size: 0.9rem;
+        cursor: pointer; transition: 0.3s; text-transform: uppercase;
+    }
+    .acc-signout-btn:hover { background: #fff; color: #000; transform: scale(1.05); }
+
+    /* Purchase History Section */
+    .account-history-wrapper {
+        display: flex; flex-direction: column; gap: 20px;
+        background: rgba(5, 40, 46, 0.2) url('fabric-1-light.png');
+        backdrop-filter: blur(12px) brightness(1) saturate(1.5);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 20px; padding: 30px;
+    }
+    
+    .history-heading {
+        font-size: 1.3rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: #fff; margin-bottom: 10px;
+    }
+
+    /* History Grid Layout */
+    .history-grid-header {
+        display: grid; grid-template-columns: 80px 2fr 1fr 1fr 1fr; gap: 15px;
+        padding: 0 20px 10px 20px; border-bottom: 1px solid rgba(255,255,255,0.2);
+        font-size: 0.8rem; font-weight: 700; color: rgba(255,255,255,0.6); text-transform: uppercase;
+    }
+    .history-list { display: flex; flex-direction: column; gap: 15px; margin-top: 10px; }
+    
+    .history-item-row {
+        display: grid; grid-template-columns: 80px 2fr 1fr 1fr 1fr; gap: 15px; align-items: center;
+        background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px; padding: 15px 20px; transition: 0.2s;
+    }
+    .history-item-row:hover { background: rgba(255, 255, 255, 0.1); }
+    
+    .hist-img { width: 60px; height: 60px; border-radius: 8px; object-fit: cover; background: rgba(0,0,0,0.5); }
+    .hist-name { font-weight: 700; font-size: 0.95rem; }
+    .hist-price { font-weight: 600; color: rgba(255,255,255,0.8); }
+    .hist-qty { font-weight: 600; color: rgba(255,255,255,0.8); }
+    .hist-date { font-size: 0.85rem; color: rgba(255,255,255,0.6); }
+
+    .empty-history { text-align: center; padding: 40px; color: rgba(255,255,255,0.5); font-style: italic; font-weight: 500;}
+
+    /* Mobile Adjustments */
+    @media screen and (max-width: 768px) {
+        .account-master-container { padding: 0 15px; }
+        .account-profile-card { flex-direction: column; text-align: center; gap: 30px; }
+        .acc-user-info { flex-direction: column; }
+        .history-grid-header { display: none; }
+        .history-item-row {
+            grid-template-columns: 60px 1fr; grid-template-rows: auto auto auto; gap: 10px;
+        }
+        .hist-img { grid-row: 1 / span 3; }
+        .hist-name { grid-column: 2; grid-row: 1; }
+        .hist-price { grid-column: 2; grid-row: 2; }
+        .hist-qty::before { content: "Qty: "; }
+        .hist-date { grid-column: 2; grid-row: 3; }
+    }
+</style>
+
+<section id="account" class="page-section" onscroll="handleAccountScroll()">
+    <div class="account-master-container">
+        
+        <div class="account-profile-card">
+            <div class="acc-user-info">
+                <img src="" id="accProfilePic" class="acc-avatar" alt="Profile" onerror="this.src='https://via.placeholder.com/80/000000/FFFFFF/?text=User'">
+                <div class="acc-details">
+                    <h2 id="accProfileName">Loading...</h2>
+                    <p id="accProfileEmail">loading@email.com</p>
+                </div>
+            </div>
+            
+            <div class="acc-stats-wrapper">
+                <div class="acc-stat-box">
+                    <span class="stat-label">ITEMS</span>
+                    <span class="stat-val" id="accTotalItems">0</span>
+                </div>
+                <div class="acc-stat-box">
+                    <span class="stat-label">SPENT</span>
+                    <span class="stat-val" id="accTotalSpent">₹0</span>
+                </div>
+            </div>
+
+            <button class="acc-signout-btn" onclick="executeSignOut()">Sign Out</button>
+        </div>
+
+        <div class="account-history-wrapper">
+            <h3 class="history-heading">Purchase History</h3>
+            
+            <div class="history-grid-header">
+                <span>Items</span>
+                <span>Name</span>
+                <span>Price</span>
+                <span>Quantity</span>
+                <span>Date</span>
+            </div>
+
+            <div class="history-list" id="purchaseHistoryList">
+                <div class="empty-history">No purchases found. Time to hit the shop.</div>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+<script id="account-logic-engine">
+    // --- 1. NAVBAR SCROLL EFFECT ---
+    function handleAccountScroll() {
+        const accountSect = document.getElementById('account');
+        const mainNav = document.querySelector('.navbar'); 
+        if(accountSect.scrollTop > 20) {
+            if(mainNav) mainNav.classList.add('shop-glassy-nav');
+        } else {
+            if(mainNav) mainNav.classList.remove('shop-glassy-nav');
+        }
+    }
+
+    // --- 2. UPDATE DISPLAY USER FUNCTION ---
+    // Overrides the existing displayUser to also populate the Account dashboard
+    function displayUser() {
+        // Update Navbar Elements
+        document.getElementById('googleInfo').style.display = "flex";
+        document.getElementById('googlePic').src = user.img;
+        document.getElementById('googleName').innerText = user.name;
+        document.getElementById('customGoogleBtn').style.display = "none";
+
+        // Update Account Dashboard Elements
+        document.getElementById('accProfilePic').src = user.img;
+        document.getElementById('accProfileName').innerText = user.name;
+        document.getElementById('accProfileEmail').innerText = user.email || "User Email";
+
+        // Re-bind marquee if function exists
+        if(typeof bindProfileMarquee === "function") {
+            bindProfileMarquee('googleNameWrapper', 'googleName'); 
+        }
+    }
+
+    // --- 3. SIGN OUT LOGIC ---
+    function executeSignOut() {
+        // Reset Navbar UI
+        document.getElementById('googleInfo').style.display = "none";
+        document.getElementById('customGoogleBtn').style.display = "flex";
+        
+        // Clear Local Storage
+        window.localStorage.removeItem('user');
+        if(typeof user !== 'undefined') {
+            user = {};
+        }
+
+        // Redirect to Home if currently on Account page
+        const accountPage = document.getElementById('account');
+        if (accountPage.classList.contains('active-page')) {
+            const homeBtn = document.querySelector('.nav-links ul li a'); // Grabs the first nav button (Home)
+            navigateSPA('home', homeBtn);
+        }
+    }
+</script>
+<style id="shop-styles">
+    /* --- SHOP CORE & FREEFLOW --- */
+    #shop {
+        width: 100vw;
+        height: 100vh;
+        overflow-y: auto; 
+        overflow-x: hidden;
+        position: absolute;
+        top: 0; left: 0;
+        z-index: 1;
+        scrollbar-width: none;
+        display: none;
+    }
+    #shop.active-page { display: block; }
+    #shop::-webkit-scrollbar { display: none; }
+
+    /* --- MOBILE STICKY BAR (< 768px) --- */
+    .shop-mobile-sticky-bar {
+        display: none;
+        position: sticky;
+        top: 14.75%; /* Sticks to the top of the #shop container */
+        left: 0; width: 100%; height: 60px;
+        background: rgba(255, 255, 255, 0.4) url('fabric-1-light.png');
+        backdrop-filter: blur(8px) brightness(1) saturate(1.5);
+        z-index: 12; 
+        border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        margin-bottom: 20px;
+    }
+
+    .m-bar-btn {
+        flex: 1; display: flex; align-items: center; justify-content: center;
+        gap: 10px; font-weight: 800; cursor: pointer; color: #fff;
+        pointer-events: auto; 
+    }
+    .m-bar-btn:first-child { border-right: 1px solid rgba(255, 255, 255, 0.1); }
+
+    /* Dynamic Global Navbar Glassy Class (Triggered by Shop Scroll) */
+    .navbar.shop-glassy-nav::before {
+        background: rgba(255, 255, 255, 0.1) url('fabric-1-light.png'); backdrop-filter: blur(25px); border-bottom: 1px solid rgba(0,0,0,0.05);
+    }
+
+    /* --- MASTER LAYOUT --- */
+    .shop-master-layout {
+        display: flex;
+        width: 100%;
+        max-width: 1800px;
+        margin: 0 auto;
+        padding: 100px 30px 250px 30px; /* 250px bottom clears music player */
+        gap: 30px;
+        align-items: flex-start;
+    }
+
+    /* --- LEFT SIDEBAR WRAPPER (Strictly 550px, Cart & Filters Side-by-Side) --- */
+    .shop-sidebars-wrapper {
+        width: 550px;
+        flex-shrink: 0;
+        display: flex;
+        flex-direction: row; 
+        gap: 15px;
+        height: calc(100vh - 340px); /* Reactive height keeping space from player */
+        position: sticky;
+        top: 100px;
+        z-index: 1;
+    }
+
+    .shop-glass-panel {
+        flex: 1; 
+        background: rgba(255, 255, 255, 0.05) url('fabric-1-light.png');
+        backdrop-filter: blur(25px) brightness(1.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 20px;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+
+    }
+
+    .panel-header {
+        padding: 20px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        display: flex; justify-content: space-between; align-items: center;
+    }
+    .panel-header h2 { font-size: 1rem; font-weight: 800; text-transform: uppercase; margin: 0; color: #fff; display: flex; align-items: center; gap: 8px;}
+    
+    .transparent-close-btn {
+        display: none; /* Only mobile */
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 50%; width: 35px; height: 35px;
+        color: #fff; cursor: pointer; transition: 0.3s;
+        align-items: center; justify-content: center;
+    }
+    .transparent-close-btn:hover { background: #fff; color: #000; }
+
+    /* --- THEMED SCROLLBARS --- */
+    .cart-items-scroll, .filter-scroll-area {
+        scrollbar-width: thin;
+        scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+    }
+    .cart-items-scroll::-webkit-scrollbar, .filter-scroll-area::-webkit-scrollbar { width: 6px; }
+    .cart-items-scroll::-webkit-scrollbar-track, .filter-scroll-area::-webkit-scrollbar-track { background: transparent; }
+    .cart-items-scroll::-webkit-scrollbar-thumb, .filter-scroll-area::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.3); border-radius: 10px; }
+
+    /* --- MINI CART FORMATTING (Highly Defined Cards) --- */
+    .cart-items-scroll { flex: 1; overflow-y: auto; padding: 15px; }
+    
+    .cart-item {
+        display: flex; align-items: stretch;
+        background: rgba(255, 255, 255, 0.1) url('fabric-1-light.png'); /* More defined */
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        border-radius: 15px; padding: 12px; margin-bottom: 15px;
+    }
+    .cart-item-img {
+        width: 65px; height: 90px; object-fit: cover;
+        border-radius: 8px; margin-right: 15px;
+        border: 1px solid rgba(255,255,255,0.1);
+    }
+    .cart-item-info { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 10px;}
+    .cart-item-name { font-size: 0.9rem; font-weight: 700; color: #fff; line-height: 1.3; }
+    
+    /* Inline Qty and Price */
+    .cart-qty-price-row { display: flex; justify-content: space-between; align-items: center; }
+    .qty-ctrl { display: flex; align-items: center; gap: 10px; }
+    
+    .qty-btn {
+        width: 26px; height: 26px; border-radius: 50%; /* Strictly Round */
+        background: rgba(255, 255, 255, 0.15) url('fabric-1-light.png'); 
+        border: 1px solid rgba(255, 255, 255, 0.4);
+        color: white; cursor: pointer; font-weight: 800; display: flex; align-items: center; justify-content: center;
+        transition: 0.3s;
+    }
+    .qty-btn:hover { background: #fff; color: #000; }
+    .cart-item-price { font-weight: 800; color: #fff; font-size: 1.05rem; }
+
+    .cart-footer { padding: 20px; background: rgba(255, 255, 255, 0.3); border-top: 1px solid rgba(255, 255, 255, 0.1); }
+    .cart-total-row { display: flex; justify-content: space-between; font-weight: 800; margin-bottom: 15px; color: #fff; font-size: 1.1rem;}
+    .cart-actions { display: flex; gap: 10px; flex-direction: column;}
+    
+    /* Unified UI Buttons */
+    .shop-btn-solid { padding: 12px; border-radius: 30px; background: #fff; border: 1px solid #fff; color: #000; font-weight: 800; cursor: pointer; transition: 0.3s; }
+    .shop-btn-solid:hover { transform: scale(1.02); }
+    .shop-btn-outline { padding: 12px; border-radius: 30px; background: rgba(255,255,255,0.05) url('fabric-1-light.png'); border: 1px solid rgba(255,255,255,0.4); color: #fff; font-weight: 700; cursor: pointer; transition: 0.3s; }
+    .shop-btn-outline:hover { background: rgba(255,255,255,0.2); }
+
+    /* --- FILTERS & CUSTOM SORT UI --- */
+    .filter-scroll-area { flex: 1; overflow-y: auto; padding: 20px; }
+    .filter-group { margin-bottom: 25px; }
+    .filter-group h3 { font-size: 0.8rem; color: rgba(255, 255, 255, 0.7); text-transform: uppercase; margin-bottom: 15px; letter-spacing: 1px; }
+
+    /* Custom Glass Dropdown */
+    .custom-select-wrapper { position: relative; width: 100%; margin-bottom: 15px; user-select: none; }
+    .custom-select-display {
+        width: 100%; padding: 12px 20px; background: rgba(255, 255, 255, 0.1) url('fabric-1-light.png');
+        border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 30px; color: #fff;
+        font-size: 0.9rem; font-weight: 600; display: flex; justify-content: space-between; align-items: center; cursor: pointer;
+    }
+    .custom-select-options {
+        position: absolute; top: calc(100% + 5px); left: 0; width: 100%;
+        background: rgba(20, 25, 30, 0.95) url('fabric-1-light.png'); backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 20px; overflow: hidden;
+        opacity: 0; pointer-events: none; transform: translateY(-10px); transition: 0.3s; z-index: 13;
+    }
+    .custom-select-wrapper.open .custom-select-options { opacity: 1; pointer-events: auto; transform: translateY(0); }
+    .custom-opt { padding: 12px 20px; font-size: 0.85rem; color: #ccc; cursor: pointer; transition: 0.2s; border-bottom: 1px solid rgba(255,255,255,0.05); }
+    .custom-opt:hover { background: rgba(255,255,255,0.1); color: #fff; }
+    .custom-opt.active { color: #fff; font-weight: 800; background: rgba(255,255,255,0.05); }
+    <input type="hidden" id="sortSelectHidden" value="popularity">
+
+    /* Loop Checkboxes (Rings instead of filled circles) */
+/* --- PERFECTLY CENTERED CUSTOM LOOPS --- */
+    .loop-check { 
+        display: flex; 
+        align-items: center; /* Perfectly aligns text vertically with the circle */
+        position: relative; 
+        padding-left: 35px; 
+        margin-bottom: 12px; 
+        cursor: pointer; 
+        font-size: 0.85rem; 
+        color: #fff; 
+        font-weight: 600;
+        min-height: 24px;
+    }
+    .loop-check input { 
+        position: absolute; 
+        opacity: 0; 
+        cursor: pointer; 
+    }
+    .loop-check { display: flex; position: relative; padding-left: 35px; align-items: center; margin-bottom: 12px; cursor: pointer; font-size: 0.85rem; color: #fff; font-weight: 600;}
+    .loop-check input { position: absolute; opacity: 0; cursor: pointer; }
+        .loop-mark { 
+        position: absolute; 
+        top: 50%; 
+        left: 0; 
+        transform: translateY(-50%); /* Perfectly centers the outer ring on the Y-axis */
+        height: 22px; 
+        width: 22px; 
+        border-radius: 50%; 
+        border: 2px solid rgba(255,255,255,0.4); 
+        transition: 0.2s; 
+        box-sizing: border-box;
+    }
+    .loop-check input:checked ~ .loop-mark { border-color: #fff; }
+    .loop-check input:checked ~ .loop-mark:after { content: ""; position: absolute; top: 3px; left: 3px; width: 10px; height: 10px; border-radius: 50%; border: 2px solid #fff; }
+
+    /* Size Grid */
+    .size-f-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+    .size-check { text-align: center; cursor: pointer; position: relative;}
+    .size-check input { position: absolute; opacity: 0; }
+    .size-check span {
+        display: block; padding: 8px 0; border-radius: 30px; font-size: 0.75rem; font-weight: 700;
+        background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.2); color: #fff; transition: 0.3s;
+    }
+    .size-check input:checked ~ span { background: rgba(255,255,255,0.25); border-color: #fff; }
+
+    /* --- RIGHT COLUMN: 3-GRID PRODUCT FEED --- */
+    .shop-products-right { 
+        flex: 1; min-width: 0; 
+    }
+    .product-grid-layout {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr); /* STRICTLY 3 PER ROW */
+        gap: 25px;
+    }
+
+    /* Product Card (No Enlarge on Hover) */
+    .product-card {
+        background: rgba(255, 255, 255, 0.05) url('fabric-1-light.png');
+        backdrop-filter: blur(15px) brightness(1.2);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 25px; padding: 15px; position: relative;
+        display: flex; flex-direction: column; transition: 0.3s ease;
+    }
+    .product-card:hover { border-color: rgba(255, 255, 255, 0.4); background-color: rgba(255, 255, 255, 0.08); }
+
+    .p-photo-box {
+        width: 100%; aspect-ratio: 3/4; border-radius: 20px; overflow: hidden;
+        position: relative; background: #000; border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .p-main-img { width: 100%; height: 100%; object-fit: cover; transition: opacity 0.4s ease-in-out; }
+
+    /* Wishlist Star (360 Rotate & Yellow) */
+    .p-overlay-wish {
+        position: absolute; top: 12px; right: 12px; width: 38px; height: 38px;
+        background: rgba(0, 0, 0, 0.3); backdrop-filter: blur(8px);
+        border-radius: 50%; display: flex; align-items: center; justify-content: center;
+        border: 1px solid rgba(255, 255, 255, 0.3); cursor: pointer; z-index: 3;
+        color: #fff; transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275), color 0.3s, border-color 0.3s, background 0.3s;
+        font-size: 1.1rem;
+    }
+    .p-overlay-wish:hover { background: rgba(0,0,0,0.6); color: #FFD700; }
+    .p-overlay-wish.active-wish { color: #FFD700; border-color: #FFD700; background: rgba(0,0,0,0); transform: rotate(360deg); }
+
+    /* Transparent Glass UI Description Scroll Overlay */
+    .p-desc-scroll {
+        position: absolute; bottom: 0; left: 0; width: 100%; height: 25%;
+        background: rgba(255, 255, 255, 0.15) url('fabric-1-light.png');
+        backdrop-filter: blur(15px);
+        border-top: 1px solid rgba(255, 255, 255, 0.2);
+        padding: 25px 15px 15px 15px; font-size: 0.85rem; line-height: 1.5; color: #fff;
+        opacity: 0; transition: opacity 0.1s; /* Instantly hide */
+        overflow-y: auto; scrollbar-width: none; pointer-events: none;
+    }
+    .p-photo-box:hover .p-desc-scroll { opacity: 1; pointer-events: auto; }
+
+    .p-details { padding: 15px 5px 0 5px; flex: 1; display: flex; flex-direction: column;}
+    .p-name { font-weight: 700; font-size: 1.05rem; margin-bottom: 5px; display: block; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
+    .p-price { color: rgba(255, 255, 255, 0.8); font-size: 1rem; font-weight: 600;}
+
+    /* Rounded Add To Cart Engine */
+    .p-add-box { margin-top: 15px; position: relative; height: 45px; border-radius: 30px; overflow: hidden; }
+    
+    .p-add-trigger {
+        width: 100%; height: 100%; background: rgba(255, 255, 255, 0.1) url('fabric-1-light.png'); border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 30px; color: #fff; font-weight: 700; display: flex; align-items: center; justify-content: center;
+        gap: 8px; cursor: pointer; font-size: 0.9rem; transition: background 0.3s, opacity 0.2s;
+    }
+    .p-add-trigger:hover { background: rgba(255, 255, 255, 0.2); }
+
+    .size-selector-row {
+        position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(255, 255, 255, 0.2) url('fabric-1-light.png'); backdrop-filter: blur(15px);
+        border-radius: 30px; display: flex; align-items: center; justify-content: center; gap: 6px;
+        opacity: 0; pointer-events: none; transition: 0.2s; border: 1px solid rgba(255,255,255,0.4);
+    }
+    
+    /* HIDE trigger when selecting size */
+    .p-add-box.selecting .p-add-trigger { opacity: 0; pointer-events: none; }
+    .p-add-box.selecting .size-selector-row { opacity: 1; pointer-events: auto; }
+
+    .size-opt {
+        color: #fff; cursor: pointer; font-size: 0.75rem; font-weight: 800;
+        width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
+        border-radius: 50%; border: 1px solid rgba(255,255,255,0.4); transition: 0.2s;
+    }
+    .size-opt:hover { background: #fff; color: #000; }
+
+    /* Success Slogan - Solid Black, Cart Slides Left to Right */
+    .added-anim-layer {
+        position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+        background: #000; color: #fff; border-radius: 30px; border: 1px solid #333;
+        display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.85rem; text-transform: uppercase;
+        opacity: 0; pointer-events: none; overflow: hidden;
+    }
+    .cart-slide-icon {
+        position: absolute; left: -40px; font-size: 1.3rem; color: rgba(255,255,255,0.3);
+    }
+    .p-add-box.success-anim .added-anim-layer { opacity: 1; z-index: 13; }
+    .p-add-box.success-anim .cart-slide-icon { animation: cartSweep 1.5s forwards; }
+    @keyframes cartSweep { 
+        0% { left: -40px; opacity: 1;} 
+        60% { left: 110%; opacity: 1;} 
+        100% { left: 110%; opacity: 0;} 
+    }
+
+    /* --- RESPONSIVE & MOBILE (< 1050px breaks sidebars, < 768px triggers grid change) --- */
+    
+    @media screen and (max-width: 1050px) {
+        .shop-sidebars-wrapper { 
+            position: static; width: 0; height: 0; display: block; overflow: visible; 
+        }
+        .shop-products-right { margin-left: 0; width: 100%; }
+        .shop-mobile-sticky-bar { display: flex; }
+        .shop-master-layout { padding: 40px 15px 150px 15px; display: block; }
+        
+        /* Dropdowns become absolute full screens covering everything */
+        .mobile-dropdown-panel {
+            display: flex !important; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            z-index: 4000; border-radius: 0; transform: translateY(-100%); opacity: 0; visibility: hidden;
+            transition: transform 0.4s ease, opacity 0.4s, visibility 0.4s;
+            background: rgba(255, 255, 255, 0.4) url('fabric-1-light.png'); backdrop-filter: blur(30px);
+            border: none;
+        }
+        .mobile-dropdown-panel.open-panel { transform: translateY(0); opacity: 1; visibility: visible; }
+        .transparent-close-btn { display: flex; } 
+    }
+
+    @media screen and (max-width: 768px) {
+        /* Strictly 2 products per row on mobile */
+        .product-grid-layout { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+        .p-photo-box { border-radius: 12px; }
+        .product-card { padding: 10px; border-radius: 15px; }
+        .p-add-trigger { font-size: 0.75rem; padding: 0 10px;}
+        .p-desc-scroll { font-size: 0.75rem; padding: 15px 10px 10px 10px; }
+        .ultragap { margin-top: 15%;}
+    }
+
+    /* Keep Z-Index clean when dropdown opens */
+    body.dropdown-active #main-brand-authority, 
+    body.dropdown-active .navbar { z-index: 0; visibility: none; }
+    body.dropdown-active { z-index: 5000;}
+
+
+    /* Glass Payment Modal with Centered Buttons */
+    .payment-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(255, 255, 255, 0.5); backdrop-filter: blur(15px); z-index: 15; display: none; align-items: center; justify-content: center; }
+    .payment-box { 
+        background: rgba(30, 35, 40, 0.8) url('fabric-1-light.png'); backdrop-filter: blur(25px); border: 1px solid rgba(255,255,255,0.2);
+        color: #fff; padding: 40px; border-radius: 30px; text-align: center; max-width: 400px; width: 90%; 
+    }
+    .pay-btns { display: flex; gap: 15px; margin-top: 30px; justify-content: center; }
+    .pay-confirm { width: 130px; padding: 12px; background: #fff; color: #000; border: none; border-radius: 30px; font-weight: 800; cursor: pointer; transition: 0.3s;}
+    .pay-confirm:hover { transform: scale(1.05); }
+    .pay-cancel { width: 130px; padding: 12px; background: transparent; color: #fff; border: 1px solid rgba(255,255,255,0.4); border-radius: 30px; font-weight: 800; cursor: pointer; transition: 0.3s;}
+    .pay-cancel:hover { background: rgba(255,255,255,0.1); }
+    
+</style>
+
+<section id="shop" class="page-section" onscroll="handleShopScroll()">
+  <div class="ultragap"></div>
+    
+          <div class="shop-mobile-sticky-bar" id="mobileShopBar">
+        <div class="m-bar-btn" onclick="toggleMobilePanel('miniCartPanel', true, event)">
+            <i class="fas fa-shopping-basket"></i> <span>Cart</span>
+        </div>
+        <div class="m-bar-btn" onclick="toggleMobilePanel('filterPanel', true, event)">
+            <span>Filters & Sort</span> <i class="fas fa-sliders-h"></i>
+        </div>
+    </div>
+        
+
+
+    <div class="shop-master-layout">
+
+
+        <aside class="shop-sidebars-wrapper">
+            
+            <div class="shop-glass-panel mobile-dropdown-panel" id="miniCartPanel">
+                <div class="panel-header">
+                    <h2><i class="fas fa-shopping-bag"></i> Cart</h2>
+                    <button class="transparent-close-btn" onclick="toggleMobilePanel('miniCartPanel', false, event)"><i class="fas fa-times"></i></button>
+                </div>
+                <div class="cart-items-scroll" id="cartItemsList"></div>
+                <div class="cart-footer">
+                    <div class="cart-total-row"><span>Total:</span><span id="cartGrandTotal">₹0</span></div>
+                    <div class="cart-actions">
+                        <button class="shop-btn-solid" onclick="openPaymentPopup()">Checkout</button>
+                        <button class="shop-btn-outline" onclick="clearCart()">Clear Cart</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="shop-glass-panel mobile-dropdown-panel" id="filterPanel">
+                <div class="panel-header">
+                    <h2><i class="fas fa-sliders-h"></i> Filters</h2>
+                    <button class="transparent-close-btn" onclick="toggleMobilePanel('filterPanel', false, event)"><i class="fas fa-times"></i></button>
+                </div>
+                
+                <div class="filter-scroll-area">
+                    <div class="filter-group">
+                        <h3>Sort By</h3>
+                        <div class="custom-select-wrapper" id="customSortWrapper">
+                            <div class="custom-select-display" onclick="toggleCustomSort(event)">
+                                <span id="sortSelectedText">Popularity</span>
+                                <i class="fas fa-chevron-down"></i>
+                            </div>
+                            <div class="custom-select-options">
+                                <div class="custom-opt" onclick="selectSort('popularity', 'Popularity', event)">Popularity</div>
+                                <div class="custom-opt" onclick="selectSort('recommended', 'Recommended', event)">Recommended</div>
+                                <div class="custom-opt" onclick="selectSort('latest', 'Latest Arrivals', event)">Latest Arrivals</div>
+                                <div class="custom-opt" onclick="selectSort('hot', 'Hot Products', event)">Hot Products</div>
+                                <div class="custom-opt" onclick="selectSort('priceAsc', 'Price: Asc to Desc', event)">Price: Asc to Desc</div>
+                                <div class="custom-opt" onclick="selectSort('priceDesc', 'Price: Desc to Asc', event)">Price: Desc to Asc</div>
+                            </div>
+                            <input type="hidden" id="sortSelectHidden" value="popularity">
+                        </div>
+                    </div>
+
+                    <div class="filter-group">
+                        <h3>Category</h3>
+                        <label class="loop-check">Men <input type="checkbox" value="men" data-filter="gender" onchange="runFilters()"><span class="loop-mark"></span></label>
+                        <label class="loop-check">Women <input type="checkbox" value="women" data-filter="gender" onchange="runFilters()"><span class="loop-mark"></span></label>
+                        <label class="loop-check">Kids <input type="checkbox" value="kids" data-filter="gender" onchange="runFilters()"><span class="loop-mark"></span></label>
+                        <label class="loop-check">Unisex <input type="checkbox" value="unisex" data-filter="gender" onchange="runFilters()"><span class="loop-mark"></span></label>
+                    </div>
+
+                    <div class="filter-group">
+                        <h3>Product Range</h3>
+                        <label class="loop-check">Cotton <input type="checkbox" value="cotton" data-filter="brand" onchange="runFilters()"><span class="loop-mark"></span></label>
+                        <label class="loop-check">Gucci <input type="checkbox" value="gucci" data-filter="brand" onchange="runFilters()"><span class="loop-mark"></span></label>
+                        <label class="loop-check">LV <input type="checkbox" value="lv" data-filter="brand" onchange="runFilters()"><span class="loop-mark"></span></label>
+                    </div>
+
+                    <div class="filter-group">
+                        <h3>Size</h3>
+                        <div class="size-f-grid">
+                            <label class="size-check"><input type="checkbox" value="XS" data-filter="size" onchange="runFilters()"><span>XS</span></label>
+                            <label class="size-check"><input type="checkbox" value="S" data-filter="size" onchange="runFilters()"><span>S</span></label>
+                            <label class="size-check"><input type="checkbox" value="M" data-filter="size" onchange="runFilters()"><span>M</span></label>
+                            <label class="size-check"><input type="checkbox" value="L" data-filter="size" onchange="runFilters()"><span>L</span></label>
+                            <label class="size-check"><input type="checkbox" value="XL" data-filter="size" onchange="runFilters()"><span>XL</span></label>
+                            <label class="size-check"><input type="checkbox" value="XXL" data-filter="size" onchange="runFilters()"><span>XXL</span></label>
+                            <label class="size-check"><input type="checkbox" value="3XL" data-filter="size" onchange="runFilters()"><span>3XL</span></label>
+                        </div>
+                    </div>
+
+                    <div class="filter-group">
+                        <h3>Collections</h3>
+                        <label class="loop-check">Fresh Products <input type="checkbox" value="fresh" data-filter="collection" onchange="runFilters()"><span class="loop-mark"></span></label>
+                        <label class="loop-check">Heavy Discounts <input type="checkbox" value="discount" data-filter="collection" onchange="runFilters()"><span class="loop-mark"></span></label>
+                        <label class="loop-check">Hot Products <input type="checkbox" value="hot" data-filter="collection" onchange="runFilters()"><span class="loop-mark"></span></label>
+                    </div>
+
+                    <div class="filter-group">
+                        <h3>Price Range</h3>
+                        <label class="loop-check">₹200 - ₹300 <input type="radio" name="pF" value="200-300" data-filter="price" onchange="runFilters()"><span class="loop-mark"></span></label>
+                        <label class="loop-check">₹300 - ₹400 <input type="radio" name="pF" value="300-400" data-filter="price" onchange="runFilters()"><span class="loop-mark"></span></label>
+                        <label class="loop-check">₹400 - ₹500 <input type="radio" name="pF" value="400-500" data-filter="price" onchange="runFilters()"><span class="loop-mark"></span></label>
+                        <label class="loop-check">₹500+ <input type="radio" name="pF" value="500-up" data-filter="price" onchange="runFilters()"><span class="loop-mark"></span></label>
+                        <label class="loop-check">All <input type="radio" name="pF" value="all" data-filter="price" onchange="runFilters()" checked><span class="loop-mark"></span></label>
+                    </div>
+
+                    <div class="filter-group">
+                        <h3>Apparel Category</h3>
+                        <label class="loop-check">Tops <input type="checkbox" value="tops" data-filter="type" onchange="runFilters()"><span class="loop-mark"></span></label>
+                        <label class="loop-check">Bottoms <input type="checkbox" value="bottoms" data-filter="type" onchange="runFilters()"><span class="loop-mark"></span></label>
+                        <label class="loop-check">Caps <input type="checkbox" value="caps" data-filter="type" onchange="runFilters()"><span class="loop-mark"></span></label>
+                    </div>
+
+                    <div class="filter-group">
+                        <h3>Ratings</h3>
+                        <label class="loop-check">4 Stars & Up <input type="radio" name="rF" value="4" data-filter="rating" onchange="runFilters()"><span class="loop-mark"></span></label>
+                        <label class="loop-check">All <input type="radio" name="rF" value="all" data-filter="rating" onchange="runFilters()" checked><span class="loop-mark"></span></label>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <main class="shop-products-right">
+            <div class="product-grid-layout" id="productGrid"></div>
+        </main>
+    </div>
+</section>
+
+<div id="paymentModal" class="payment-overlay">
+    <div class="payment-box">
+        <h2 style="margin-bottom:10px;">Secure Checkout</h2>
+        <p>Proceed to payment for ₹<span id="finalAmt">0</span>?</p>
+        <div class="pay-btns">
+            <button class="pay-confirm" onclick="closePaymentPopup()">Pay Now</button>
+            <button class="pay-cancel" onclick="closePaymentPopup()">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<script id="shop-logic-engine">
+// --- SHOP DATABASE WITH MULTIPLE IMAGES ---
+const shopProducts = [
+    {
+        id: 101, name: "Tokyo Oversized Tee", price: 450, 
+        desc: "Hand-washed 100% premium cotton with distressed edges. Featuring a limited edition Ronin Club print on back. Ultra comfortable oversized fit.",
+        images: ["https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?auto=format&fit=crop&w=600&q=80", "https://images.unsplash.com/photo-1529374255404-311a2a4f1fd9?auto=format&fit=crop&w=600&q=80", "https://images.unsplash.com/photo-1576566588028-4147f3842f27?auto=format&fit=crop&w=600&q=80"],
+        gender: "men", brand: "cotton", size: ["S","M","L","XL","XXL"], coll: "hot", type: "tops", fit: "oversized", sleeve: "half", neck: "round", design: "washed", pop: 95, date: "2023-10-01", rating: 5
+    },
+    {
+        id: 102, name: "LV Monogram Jacket", price: 850, 
+        desc: "Exclusive monogram pattern. Water resistant shell with breathable mesh lining. High luxury detailing.",
+        images: ["https://images.unsplash.com/photo-1551028719-00167b16eac5?auto=format&fit=crop&w=600&q=80", "https://images.unsplash.com/photo-1559551409-dadc959f76b8?auto=format&fit=crop&w=600&q=80"],
+        gender: "women", brand: "lv", size: ["S","M","L"], coll: "recommended", type: "tops", fit: "regular", sleeve: "full", neck: "round", design: "plain", pop: 88, date: "2023-11-15", rating: 4
+    },
+    {
+        id: 103, name: "Ronin Stealth Cap", price: 250, 
+        desc: "Structured 6-panel design. Deep black wash. One size fits all.",
+        images: ["https://images.unsplash.com/photo-1588850561407-ed78c282e89b?auto=format&fit=crop&w=600&q=80", "https://images.unsplash.com/photo-1556821840-3a63f95609a7?auto=format&fit=crop&w=600&q=80"],
+        gender: "unisex", brand: "cotton", size: [], coll: "discount", type: "caps", fit: "", sleeve: "", neck: "", design: "washed", pop: 70, date: "2023-09-20", rating: 3, noSize: true
+    },
+    {
+        id: 104, name: "Gucci Print Trousers", price: 600, 
+        desc: "Luxury print casual trousers. Relaxed fit with adjustable drawstring waist and gold hardware.",
+        images: ["https://images.unsplash.com/photo-1541099649105-f69ad21f3246?auto=format&fit=crop&w=600&q=80", "https://images.unsplash.com/photo-1555689502-c4b22d76c56f?auto=format&fit=crop&w=600&q=80"],
+        gender: "men", brand: "gucci", size: ["M","L","XL","XXL"], coll: "latest", type: "bottoms", fit: "regular", sleeve: "", neck: "", design: "plain", pop: 92, date: "2024-01-25", rating: 5
+    },
+    {
+        id: 105, name: "Kids Basic V-Neck", price: 299, 
+        desc: "Soft blend everyday wear. Highly durable and stain resistant. Perfect for daily rough use.",
+        images: ["https://images.unsplash.com/photo-1519241047957-be31d7379a5d?auto=format&fit=crop&w=600&q=80", "https://images.unsplash.com/photo-1519689680058-324335c77eba?auto=format&fit=crop&w=600&q=80"],
+        gender: "kids", brand: "cotton", size: ["XS","S","M"], coll: "fresh", type: "tops", fit: "regular", sleeve: "half", neck: "vneck", design: "plain", pop: 65, date: "2024-02-01", rating: 4
+    }
+];
+
+let shopCart = [];
+let cycleTimers = {};
+let userWishlist = JSON.parse(localStorage.getItem('ronin_wishlist')) || [];
+
+document.addEventListener('DOMContentLoaded', () => {
+    runFilters(); 
+    updateMiniCartUI();
+});
+
+// --- CUSTOM SORT DROPDOWN ---
+function toggleCustomSort(e) {
+    e.stopPropagation();
+    document.getElementById('customSortWrapper').classList.toggle('open');
+}
+function selectSort(val, text) {
+    document.getElementById('sortSelectedText').innerText = text;
+    document.getElementById('sortSelectHidden').value = val;
+    document.querySelectorAll('.custom-opt').forEach(opt => opt.classList.remove('active'));
+    event.target.classList.add('active');
+    runFilters();
+}
+document.addEventListener('click', (e) => {
+    const wrap = document.getElementById('customSortWrapper');
+    if(wrap && !e.target.closest('#customSortWrapper')) { wrap.classList.remove('open'); }
+});
+
+    function handleShopScroll() {
+        const s = document.getElementById('shop'); const mBar = document.getElementById('mobileShopBar'); const nav = document.getElementById('mainNav'); 
+        if(s.scrollTop > 10) { mBar.classList.add('scrolled-past'); nav.classList.add('shop-glassy-nav'); } 
+        else { mBar.classList.remove('scrolled-past'); nav.classList.remove('shop-glassy-nav'); }
+    }
+
+// --- RENDERING & HOVER CYCLES ---
+function renderShopGrid(items) {
+    const grid = document.getElementById('productGrid');
+    if(items.length === 0) {
+        grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 50px; opacity: 0.5;">No products found matching filters.</div>`;
+        return;
+    }
+
+    grid.innerHTML = items.map(p => {
+        const sizeHtml = p.noSize ? '' : ['S','M','L','XL','XXL'].map(s => {
+            const hasSize = p.size.includes(s) ? '' : 'style="opacity:0.2; pointer-events:none;"';
+            return `<div class="size-opt" ${hasSize} onclick="addToCart(${p.id}, '${s}')">${s}</div>`;
+        }).join('');
+
+        const isWished = userWishlist.includes(p.id) ? 'active-wish' : '';
+
+        return `
+        <div class="product-card">
+            <div class="p-photo-box" onmouseenter="startImgCycle(this, ${JSON.stringify(p.images)})" onmouseleave="stopImgCycle(this, '${p.images[0]}')">
+                <img src="${p.images[0]}" class="p-main-img" id="shopimg-${p.id}">
+                <div class="p-overlay-wish ${isWished}" onclick="toggleWishlist(this, event, ${p.id})"><i class="fas fa-star"></i></div>
+                <div class="p-desc-scroll">${p.desc}</div>
+            </div>
+            <div class="p-details">
+                <span class="p-name">${p.name}</span>
+                <span class="p-price">₹${p.price}</span>
+            </div>
+            <div class="p-add-box" id="add-wrap-${p.id}">
+                <button class="p-add-trigger" onclick="handleAddToCartClick(${p.id}, ${p.noSize || false})">
+                    <i class="fas fa-shopping-cart"></i> Add to Cart
+                </button>
+                <div class="size-selector-row">${sizeHtml}</div>
+                <div class="added-anim-layer" id="succ-${p.id}">
+                    <i class="fas fa-shopping-cart cart-slide-icon"></i> Added to Cart!
+                </div>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+function startImgCycle(el, imgs) {
+    if(imgs.length < 2) return;
+    const imgTag = el.querySelector('.p-main-img');
+    let idx = 0;
+    cycleTimers[imgTag.id] = setInterval(() => {
+        idx = (idx + 1) % imgs.length;
+        imgTag.src = imgs[idx];
+    }, 1200);
+}
+
+function stopImgCycle(el, orig) {
+    const imgTag = el.querySelector('.p-main-img');
+    clearInterval(cycleTimers[imgTag.id]);
+    imgTag.src = orig; 
+}
+
+function toggleWishlist(btn, e, id) {
+    e.stopPropagation();
+    btn.classList.toggle('active-wish');
+    if (userWishlist.includes(id)) {
+        userWishlist = userWishlist.filter(wId => wId !== id);
+    } else {
+        userWishlist.push(id);
+    }
+    localStorage.setItem('ronin_wishlist', JSON.stringify(userWishlist));
+}
+
+// --- ADD TO CART ANIMATION ---
+function handleAddToCartClick(id, noSize) {
+    if(noSize) addToCart(id, 'N/A');
+    else document.getElementById(`add-wrap-${id}`).classList.add('selecting');
+}
+
+function addToCart(id, size) {
+    const prod = shopProducts.find(p => p.id === id);
+    const exist = shopCart.find(i => i.id === id && i.size === size);
+    
+    if(exist) { if(exist.qty < 10) exist.qty++; } 
+    else { shopCart.push({ ...prod, size: size, qty: 1 }); }
+
+    const wrap = document.getElementById(`add-wrap-${id}`);
+    wrap.classList.add('success-anim');
+    setTimeout(() => {
+        wrap.classList.remove('success-anim');
+        wrap.classList.remove('selecting');
+    }, 1500);
+    
+    updateMiniCartUI();
+}
+
+// --- CART MANAGEMENT ---
+function updateCartQty(id, size, change) {
+    const item = shopCart.find(i => i.id === id && i.size === size);
+    if(!item) return;
+    item.qty += change;
+    if(item.qty <= 0) shopCart = shopCart.filter(i => !(i.id === id && i.size === size));
+    else if(item.qty > 10) item.qty = 10;
+    updateMiniCartUI();
+}
+
+function updateMiniCartUI() {
+    const list = document.getElementById('cartItemsList');
+    if(shopCart.length === 0) {
+        list.innerHTML = `<div style="text-align:center; padding: 30px; opacity:0.5;">Your basket is empty</div>`;
+        document.getElementById('cartGrandTotal').innerText = `₹0`;
+        return;
+    }
+    let total = 0;
+    list.innerHTML = shopCart.map(item => {
+        const itemTot = item.price * item.qty;
+        total += itemTot;
+        return `
+        <div class="cart-item">
+            <img src="${item.images[0]}" class="cart-item-img">
+            <div class="cart-item-info">
+                <span class="cart-item-name">${item.name} ${item.size !== 'N/A' ? `(${item.size})` : ''}</span>
+                <div class="cart-qty-price-row">
+                    <div class="qty-ctrl">
+                        <button class="qty-btn" onclick="updateCartQty(${item.id}, '${item.size}', -1)">-</button>
+                        <span>${item.qty}</span>
+                        <button class="qty-btn" onclick="updateCartQty(${item.id}, '${item.size}', 1)">+</button>
+                    </div>
+                    <div class="cart-item-price">₹${itemTot}</div>
+                </div>
+            </div>
+        </div>`;
+    }).join('');
+    document.getElementById('cartGrandTotal').innerText = `₹${total}`;
+}
+
+function clearCart() { shopCart = []; updateMiniCartUI(); }
+
+// --- FILTER & SORT ENGINE ---
+function runFilters() {
+    const getChecked = (name) => Array.from(document.querySelectorAll(`input[data-filter="${name}"]:checked`)).map(cb => cb.value);
+    
+    const fGender = getChecked('gender');
+    const fBrand = getChecked('brand');
+    const fSize = getChecked('size');
+    const fColl = getChecked('collection');
+    const fType = getChecked('type');
+    const fFit = getChecked('fit');
+    const fSleeve = getChecked('sleeve');
+    const fNeck = getChecked('neck');
+    const fDesign = getChecked('design');
+    const priceRad = document.querySelector('input[data-filter="price"]:checked').value;
+    const rateRad = document.querySelector('input[data-filter="rating"]:checked').value;
+
+    let filtered = shopProducts.filter(p => {
+        if(fGender.length && !fGender.includes(p.gender)) return false;
+        if(fBrand.length && !fBrand.includes(p.brand)) return false;
+        if(fColl.length && !fColl.includes(p.coll)) return false;
+        if(fType.length && !fType.includes(p.type)) return false;
+        if(fFit.length && !fFit.includes(p.fit)) return false;
+        if(fSleeve.length && !fSleeve.includes(p.sleeve)) return false;
+        if(fNeck.length && !fNeck.includes(p.neck)) return false;
+        if(fDesign.length && !fDesign.includes(p.design)) return false;
+        if(fSize.length && !p.noSize && !fSize.some(s => p.size.includes(s))) return false;
+        
+        if(priceRad !== 'all') {
+            if(priceRad === '200-300' && (p.price < 200 || p.price > 300)) return false;
+            if(priceRad === '300-400' && (p.price < 300 || p.price > 400)) return false;
+            if(priceRad === '400-500' && (p.price < 400 || p.price > 500)) return false;
+            if(priceRad === '500-up' && p.price < 500) return false;
+        }
+        
+        if(rateRad === '4' && p.rating < 4) return false;
+
+        return true;
+    });
+
+    const sortVal = document.getElementById('sortSelectHidden').value;
+    if(sortVal === 'priceAsc') filtered.sort((a,b) => a.price - b.price);
+    else if(sortVal === 'priceDesc') filtered.sort((a,b) => b.price - a.price);
+    else if(sortVal === 'popularity') filtered.sort((a,b) => b.pop - a.pop);
+    else if(sortVal === 'latest') filtered.sort((a,b) => new Date(b.date) - new Date(a.date));
+    else if(sortVal === 'hot') filtered.sort((a,b) => (b.coll === 'hot' ? 1 : 0) - (a.coll === 'hot' ? 1 : 0));
+    else if(sortVal === 'recommended') filtered.sort((a,b) => (b.coll === 'recommended' ? 1 : 0) - (a.coll === 'recommended' ? 1 : 0));
+
+    // Force Wishlisted items to strictly appear at the very top
+    filtered.sort((a, b) => {
+        const aWish = userWishlist.includes(a.id) ? 1 : 0;
+        const bWish = userWishlist.includes(b.id) ? 1 : 0;
+        return bWish - aWish;
+    });
+
+    renderShopGrid(filtered);
+}
+
+// --- MOBILE DROPDOWNS & CLICK OUTSIDE ---
+function toggleMobilePanel(id, show, e) {
+    if(e) e.stopPropagation();
+    const el = document.getElementById(id);
+    if(show) {
+        document.body.classList.add('dropdown-active'); 
+        el.classList.add('open-panel');
+    } else {
+        el.classList.remove('open-panel');
+        if(!document.getElementById('miniCartPanel').classList.contains('open-panel') && !document.getElementById('filterPanel').classList.contains('open-panel')) {
+            document.body.classList.remove('dropdown-active');
+        }
+    }
+}
+
+// Click outside background closure
+document.addEventListener("click", function(e) {
+    if(window.innerWidth <= 1050) {
+        const cartP = document.getElementById('miniCartPanel');
+        const filtP = document.getElementById('filterPanel');
+        if (e.target === cartP) toggleMobilePanel('miniCartPanel', false);
+        if (e.target === filtP) toggleMobilePanel('filterPanel', false);
+    }
+});
+
+// --- PAYMENTS ---
+function openPaymentPopup() {
+    if(shopCart.length === 0) return;
+    document.getElementById('finalAmt').innerText = document.getElementById('cartGrandTotal').innerText.replace('₹','');
+    document.getElementById('paymentModal').style.display = 'flex';
+}
+function closePaymentPopup() { document.getElementById('paymentModal').style.display = 'none'; }
+</script>
+
+<style id="about-styles">
+    #about {
+        position: absolute;
+        top: 0; left: 0;
+        width: 100vw; height: 100vh;
+        overflow-y: auto; overflow-x: hidden;
+        z-index: 10; 
+        padding-top: 120px; 
+        padding-bottom: 250px; 
+        scrollbar-width: none;
+        display: none;
+        color: #fff;
+        box-sizing: border-box;
+    }
+    #about.active-page { display: block; }
+    #about::-webkit-scrollbar { display: none; }
+
+    /* Desktop: Pushes content to the right, away from Music Player */
+    .about-master-container {
+        width: 100%; max-width: 1800px;
+        margin: 0 auto; padding: 0 30px;
+        display: flex; justify-content: flex-end; 
+    }
+
+    .about-content-wrapper {
+        width: calc(100% - 580px); 
+        max-width: 1100px;
+        display: flex; flex-direction: column; gap: 40px;
+    }
+
+    .about-row {
+        display: flex; flex-direction: column; gap: 15px; width: 100%;
+    }
+
+    .about-heading-block {
+        background: rgba(255, 255, 255, 0.15) url('fabric-1-light.png');
+        backdrop-filter: blur(10px) brightness(1) saturate(1.5);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        padding: 12px 30px; border-radius: 12px;
+        font-size: 1.5rem; font-weight: 800; letter-spacing: 1px; color: #fff;
+        text-transform: uppercase; align-self: flex-start;
+    }
+
+    .about-content-block {
+        width: 100%;
+        background: rgba(5, 40, 46, 0.2) url('fabric-1-light.png');
+        backdrop-filter: blur(12px) brightness(1) saturate(1.5);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        border-radius: 20px; padding: 30px;
+        font-size: 1rem; line-height: 1.6; color: #fff; font-weight: 500;
+    }
+
+    .contact-grid { display: flex; flex-direction: column; gap: 30px; }
+    .social-links-wrapper { display: flex; flex-direction: column; gap: 10px; }
+    .social-links-container { display: flex; gap: 15px; flex-wrap: wrap; }
+    
+    /* Social Buttons Base */
+    .social-btn {
+        width: 50px; height: 50px; border-radius: 50%;
+        background: rgba(255, 255, 255, 0.15); border: 1px solid rgba(255, 255, 255, 0.3);
+        display: flex; align-items: center; justify-content: center;
+        color: #fff; font-size: 1.5rem; transition: all 0.3s ease; text-decoration: none;
+    }
+    
+    /* Brand Specific Hover Colors */
+    .btn-whatsapp:hover { background: #25D366; border-color: #25D366; color: #fff; transform: scale(1.1); }
+    .btn-discord:hover { background: #5865F2; border-color: #5865F2; color: #fff; transform: scale(1.1); }
+    .btn-instagram:hover { background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%); border-color: transparent; color: #fff; transform: scale(1.1); }
+    .btn-youtube:hover { background: #FF0000; border-color: #FF0000; color: #fff; transform: scale(1.1); }
+    .btn-email:hover { background: #fff; color: #000; border-color: #fff; transform: scale(1.1); } /* Kept as it is */
+
+    .feedback-divider { width: 100%; height: 1px; background: rgba(255, 255, 255, 0.2); margin: 10px 0; }
+
+    .feedback-textarea {
+        width: 100%; height: 100px; 
+        background: rgba(0, 0, 0, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 12px;
+        padding: 15px; color: #fff; font-family: inherit; font-size: 0.95rem;
+        resize: none; outline: none; transition: 0.3s; margin-bottom: 15px;
+    }
+    .feedback-textarea:focus { border-color: #fff; background: rgba(0, 0, 0, 0.5); }
+    .feedback-textarea::placeholder { color: rgba(255, 255, 255, 0.4); }
+
+    .feedback-error-msg {
+        font-size: 0.85rem; color: #ff6b6b; margin-top: -10px; margin-bottom: 10px; display: none; font-weight: 600;
+    }
+
+    .feedback-controls { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;}
+    
+    .star-rating { display: flex; gap: 5px; flex-direction: row-reverse; }
+    .star-rating input { display: none; }
+    .star-rating label { color: rgba(255, 255, 255, 0.3); font-size: 1.8rem; cursor: pointer; transition: 0.2s; }
+    .star-rating label:hover, .star-rating label:hover ~ label, .star-rating input:checked ~ label { color: #FFD700; text-shadow: 0 0 10px rgba(255, 215, 0, 0.5); }
+
+    .submit-feedback-btn {
+        padding: 12px 30px; border-radius: 30px; background: #fff;
+        border: 1px solid #fff; color: #000; font-weight: 800; font-size: 1rem;
+        transition: 0.3s; opacity: 1; cursor: pointer;
+    }
+    .submit-feedback-btn:hover { transform: scale(1.05); }
+    .submit-feedback-btn:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
+
+    .carousel-row { 
+        display: block; width: 100%; overflow: hidden; position: relative; margin-top: 20px;
+        mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
+        -webkit-mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
+    }
+    .carousel-track {
+        display: flex; gap: 20px; width: max-content;
+        animation: scrollCarousel 40s linear infinite;
+    }
+    .carousel-track:hover { animation-play-state: paused; }
+    
+    @keyframes scrollCarousel {
+        0% { transform: translateX(0); }
+        100% { transform: translateX(-50%); } 
+    }
+
+    .feedback-card {
+        width: 350px; flex-shrink: 0;
+        background: rgba(5, 40, 46, 0.2) url('fabric-1-light.png');
+        backdrop-filter: blur(12px) brightness(1) saturate(1.5);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 20px; padding: 25px; display: flex; flex-direction: column; gap: 15px;
+    }
+    .fb-card-header { display: flex; align-items: center; gap: 15px; }
+    .fb-avatar { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(255, 255, 255, 0.8); background: #000;}
+    .fb-user-info { display: flex; flex-direction: column; }
+    .fb-username { font-weight: 800; font-size: 1.05rem; color: #fff; }
+    .fb-stars { color: #FFD700; font-size: 0.85rem; margin-top: 2px;}
+    .fb-text { font-size: 0.9rem; color: rgba(255, 255, 255, 0.9); line-height: 1.6; font-style: italic;}
+
+    /* Mobile adjustments */
+    @media screen and (max-width: 1050px) {
+        .about-master-container { justify-content: center; }
+        .about-content-wrapper { width: 100%; }
+    }
+    
+    @media screen and (max-width: 768px) {
+        .about-master-container { padding: 0 15px; }
+        .about-heading-block { font-size: 1.2rem; padding: 10px 20px; }
+        .about-content-block { padding: 20px; }
+        .feedback-card { width: 300px; padding: 20px; }
+    }
+</style>
+
+<section id="about" class="page-section" onscroll="handleAboutScroll()">
+    <div class="about-master-container">
+        <div class="about-content-wrapper">
+            
+            <div class="about-row">
+                <div class="about-heading-block">About</div>
+                <div class="about-content-block">
+                    <p>Welcome to Ronin Club. We are driven by a singular vision: to blend high-fidelity aesthetics with uncompromising street culture. Our ideology roots deeply in the concept of the masterless samurai—forging our own path, unbound by conventional trends. Every piece we craft is a testament to individuality and raw, authentic design.</p>
+                </div>
+            </div>
+
+            <div class="about-row">
+                <div class="about-heading-block">Contact & Feedback</div>
+                <div class="about-content-block contact-grid">
+                    
+                    <div class="social-links-wrapper">
+                        <p>Reach out to us directly for customer service, inquiries, or to join our community:</p>
+                        <div class="social-links-container">
+                            <a href="https://whatsapp.com" target="_blank" class="social-btn btn-whatsapp"><i class="fab fa-whatsapp"></i></a>
+                            <a href="https://discord.com" target="_blank" class="social-btn btn-discord"><i class="fab fa-discord"></i></a>
+                            <a href="https://instagram.com" target="_blank" class="social-btn btn-instagram"><i class="fab fa-instagram"></i></a>
+                            <a href="https://youtube.com" target="_blank" class="social-btn btn-youtube"><i class="fab fa-youtube"></i></a>
+                            <a href="mailto:support@roninclub.com" class="social-btn btn-email"><i class="fas fa-envelope"></i></a>
+                        </div>
+                    </div>
+
+                    <div class="feedback-divider"></div>
+
+                    <div class="feedback-form-wrapper">
+                        <p style="margin-bottom: 10px;">Leave a review based on your experience:</p>
+                        
+                        <textarea id="feedbackText" class="feedback-textarea" maxlength="100" 
+                            placeholder="We value your experience. Please share your honest thoughts with us..." 
+                            oninput="validateFeedbackLocal()" 
+                            onkeydown="event.stopPropagation()"></textarea>
+                        
+                        <div id="feedbackError" class="feedback-error-msg"></div>
+                        
+                        <div class="feedback-controls">
+                            <div class="star-rating">
+                                <input type="radio" name="rate" id="star5" value="5"><label for="star5" class="fas fa-star"></label>
+                                <input type="radio" name="rate" id="star4" value="4"><label for="star4" class="fas fa-star"></label>
+                                <input type="radio" name="rate" id="star3" value="3"><label for="star3" class="fas fa-star"></label>
+                                <input type="radio" name="rate" id="star2" value="2"><label for="star2" class="fas fa-star"></label>
+                                <input type="radio" name="rate" id="star1" value="1"><label for="star1" class="fas fa-star"></label>
+                            </div>
+                            <button id="submitFeedbackBtn" class="submit-feedback-btn" onclick="submitFeedback()">Submit</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="carousel-row">
+                <div class="carousel-track" id="feedbackCarousel">
+                    </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<script id="about-logic-engine">
+    function handleAboutScroll() {
+        const aboutSect = document.getElementById('about');
+        const mainNav = document.querySelector('.navbar'); 
+        if(aboutSect.scrollTop > 20) {
+            if(mainNav) mainNav.classList.add('shop-glassy-nav');
+        } else {
+            if(mainNav) mainNav.classList.remove('shop-glassy-nav');
+        }
+    }
+
+    // Local validation for basic rules (runs while typing)
+    function validateFeedbackLocal() {
+        const textObj = document.getElementById('feedbackText').value;
+        const errorMsg = document.getElementById('feedbackError');
+
+        if (textObj.length > 0) {
+            const rawText = textObj.trim();
+            const validWordsRegex = /^[a-zA-Z0-9\s.,!?'"\-\n\r\u0900-\u097FÀ-ÿ]+$/;
+            const socialRegex = /(@[\w.-]+|(?:https?:\/\/)?(?:www\.)?(?:instagram|twitter|facebook|tiktok|snapchat|x|youtube)\.com\/[\w.-]+)/i;
+
+            if (rawText.length < 4) {
+                errorMsg.innerText = "Please enter at least 4 characters.";
+                errorMsg.style.display = "block";
+            } else if (!validWordsRegex.test(rawText)) {
+                errorMsg.innerText = "Only English and Hindi languages with basic punctuation are allowed.";
+                errorMsg.style.display = "block";
+            } else if (socialRegex.test(rawText)) {
+                errorMsg.innerText = "Social media usernames or links are not permitted.";
+                errorMsg.style.display = "block";
+            } else {
+                errorMsg.style.display = "none";
+            }
+        } else {
+            errorMsg.style.display = "none";
+        }
+    }
+
+    let customerDatabase = [
+        { email: "c@example.com", username: "@RichRonin", avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80", lifetimeSpend: 15000, review: { text: "Highest spender here. The quality justifies every single penny.", stars: 5 } },
+        { email: "a@example.com", username: "@TokyoDrift", avatar: "https://images.unsplash.com/photo-1527980965255-d3b416303d12?auto=format&fit=crop&w=100&q=80", lifetimeSpend: 10000, review: { text: "Insane aesthetics. Fits perfectly with my wardrobe.", stars: 5 } },
+        { email: "b@example.com", username: "@StreetWearGod", avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80", lifetimeSpend: 5000, review: { text: "Really good fabrics, shipping was quick.", stars: 4 } },
+        { email: "d@example.com", username: "@Aiko_Vibes", avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=100&q=80", lifetimeSpend: 3000, review: { text: "UI of the site is sick, and the merch backs it up perfectly.", stars: 5 } }
+    ];
+
+    const dummyReviews = [
+        { username: "@SamuraiJack", avatar: "https://images.unsplash.com/photo-1599566150163-29194dcaad36?auto=format&fit=crop&w=100&q=80", text: "Best oversized tee I've ever owned.", stars: 5 },
+        { username: "@NightCity", avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=100&q=80", text: "The details on the stitching are flawless.", stars: 4 },
+        { username: "@UrbanNinja", avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=100&q=80", text: "Customer service helped me instantly with sizing.", stars: 5 },
+        { username: "@Kaito_77", avatar: "https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=100&q=80", text: "Washed designs look vintage and feel premium.", stars: 5 },
+        { username: "@Akira_1", avatar: "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=100&q=80", text: "A bit pricey, but the quality makes up for it.", stars: 4 },
+        { username: "@GhostProtocol", avatar: "https://images.unsplash.com/photo-1552058544-f2b08422138a?auto=format&fit=crop&w=100&q=80", text: "Will definitely be shopping here again.", stars: 5 },
+        { username: "@NeonWaves", avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&q=80", text: "Caps fit perfectly. Structure is solid.", stars: 5 }
+    ];
+
+    function refreshCarousel() {
+        let displayList = [];
+        let loggedInEmail = null;
+        try {
+            const lsUser = JSON.parse(localStorage.getItem('user'));
+            if (lsUser && lsUser.email) loggedInEmail = lsUser.email;
+        } catch(e){}
+
+        if (loggedInEmail) {
+            let userRecord = customerDatabase.find(c => c.email === loggedInEmail);
+            if (userRecord && userRecord.review) {
+                displayList.push({ username: userRecord.username, avatar: userRecord.avatar, text: userRecord.review.text, stars: userRecord.review.stars });
+            }
+        }
+
+        let otherCustomers = customerDatabase.filter(c => c.email !== loggedInEmail && c.review);
+        otherCustomers.sort((a, b) => b.lifetimeSpend - a.lifetimeSpend);
+
+        for (let c of otherCustomers) {
+            if (displayList.length >= 10) break;
+            displayList.push({ username: c.username, avatar: c.avatar, text: c.review.text, stars: c.review.stars });
+        }
+
+        let dummyIndex = 0;
+        while (displayList.length < 10 && dummyIndex < dummyReviews.length) {
+            displayList.push(dummyReviews[dummyIndex]);
+            dummyIndex++;
+        }
+
+        const generateCards = (list) => {
+            return list.map(r => `
+                <div class="feedback-card">
+                    <div class="fb-card-header">
+                        <img src="${r.avatar}" class="fb-avatar">
+                        <div class="fb-user-info">
+                            <span class="fb-username">${r.username}</span>
+                            <span class="fb-stars">${'<i class="fas fa-star"></i>'.repeat(r.stars)}${r.stars < 5 ? '<i class="far fa-star"></i>'.repeat(5 - r.stars) : ''}</span>
+                        </div>
+                    </div>
+                    <p class="fb-text">"${r.text}"</p>
+                </div>
+            `).join('');
+        };
+
+        const htmlBlock = generateCards(displayList);
+        document.getElementById('feedbackCarousel').innerHTML = htmlBlock + htmlBlock;
+    }
+
+    // MAIN SUBMIT FUNCTION (WITH API MODERATION)
+    async function submitFeedback() {
+        const textObj = document.getElementById('feedbackText').value;
+        const errorMsg = document.getElementById('feedbackError');
+        const btn = document.getElementById('submitFeedbackBtn');
+        const rawText = textObj.trim();
+
+        // 1. Initial Local Checks before API call
+        if (rawText.length === 0) {
+            errorMsg.innerText = "Please enter your feedback.";
+            errorMsg.style.display = "block";
+            return;
+        }
+        
+        const validWordsRegex = /^[a-zA-Z0-9\s.,!?'"\-\n\r\u0900-\u097FÀ-ÿ]+$/;
+        const socialRegex = /(@[\w.-]+|(?:https?:\/\/)?(?:www\.)?(?:instagram|twitter|facebook|tiktok|snapchat|x|youtube)\.com\/[\w.-]+)/i;
+
+        if (rawText.length < 4 || !validWordsRegex.test(rawText) || socialRegex.test(rawText)) {
+            validateFeedbackLocal(); // Triggers the specific error text
+            return;
+        }
+
+        // 2. Put Button in Loading State
+        btn.innerHTML = "<i class='fas fa-spinner fa-spin'></i> Checking...";
+        btn.disabled = true;
+        errorMsg.style.display = "none";
+
+        try {
+            // 3. Call the Internet Moderation API (PurgoMalum)
+            const response = await fetch(`https://www.purgomalum.com/service/containsprofanity?text=${encodeURIComponent(rawText)}`);
+            const hasProfanity = await response.text();
+
+            if (hasProfanity === "true") {
+                errorMsg.innerText = "Content violates moderation policies. Please remove inappropriate language.";
+                errorMsg.style.display = "block";
+                
+                // Reset Button
+                btn.innerHTML = "Submit";
+                btn.disabled = false;
+                return; // Stop submission
+            }
+        } catch (error) {
+            console.error("Moderation API failed, falling back to strict submission.");
+            // If the API fails for some reason, we proceed (or you can choose to block it)
+        }
+
+        // 4. Proceed with Save to Database
+        const starsObj = document.querySelector('input[name="rate"]:checked');
+        let selectedStars = starsObj ? parseInt(starsObj.value) : 5; // Default to 5 if empty
+
+        let loggedInUser = null;
+        try { loggedInUser = JSON.parse(localStorage.getItem('user')); } catch(e){}
+
+        if(loggedInUser) {
+            let existingRecord = customerDatabase.find(c => c.email === loggedInUser.email);
+            if(existingRecord) {
+                existingRecord.review = { text: rawText, stars: selectedStars };
+            } else {
+                customerDatabase.push({
+                    email: loggedInUser.email,
+                    username: loggedInUser.name || "@NewMember",
+                    avatar: loggedInUser.picture || "https://via.placeholder.com/100",
+                    lifetimeSpend: 0, 
+                    review: { text: rawText, stars: selectedStars }
+                });
+            }
+        }
+
+        // 5. Success State
+        btn.innerHTML = "<i class='fas fa-check'></i> Thank You!";
+        btn.style.background = "rgba(255, 255, 255, 0.2)";
+        btn.style.color = "#fff";
+        btn.style.borderColor = "rgba(255,255,255,0.4)";
+
+        refreshCarousel();
+
+        // 6. Reset Form
+        setTimeout(() => {
+            document.getElementById('feedbackText').value = '';
+            document.getElementsByName('rate').forEach(s => s.checked = false);
+            btn.innerHTML = "Submit";
+            btn.style = "";
+            btn.disabled = false;
+            errorMsg.style.display = "none";
+        }, 2000);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        refreshCarousel();
+    });
+</script>
+
+
+  <script>
+    // --- 1. SPA WOODEN/BAMBOO TRANSITIONS ---
+    const logsContainer = document.getElementById('logs-container');
+    const logsCount = 12;
+    const logs = [];
+    
+    for(let i = 0; i < logsCount; i++) {
+        let log = document.createElement('div');
+        log.className = `log-bar ${i % 2 === 0 ? 'log-even' : 'log-odd'}`;
+        log.style.top = `${i * 8.5}vh`;
+        logsContainer.appendChild(log);
+        logs.push(log);
+    }
+
+    const thumpAudio = document.getElementById('thumpSnd');
+    const thunkAudio = document.getElementById('thunkSnd');
+
+    function playSoundEffect(audioElement) {
+        if (isSiteMuted) return; 
+        if(audioElement) {
+            const clone = audioElement.cloneNode();
+            clone.volume = 0.5;
+            clone.play().catch(e => {});
+        }
+    }
+
+    const delay = ms => new Promise(res => setTimeout(res, ms));
+    let isTransitioning = false;
+
+    async function navigateSPA(targetId, navBtnElement) {
+        if(isTransitioning) return;
+        const targetSection = document.getElementById(targetId);
+        if(!targetSection || targetSection.classList.contains('active-page')) return;
+
+        isTransitioning = true;
+
+            // --- NEW LOGO LOGIC ---
+            const overlay = document.getElementById('transitionOverlay');
+    const brand = document.getElementById('main-brand-authority');
+    overlay.classList.add('is-active'); 
+
+
+        document.getElementById('transitionOverlay').classList.add('is-active'); // Unlocks overlay visibility safely
+        
+        document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active-nav'));
+        if(navBtnElement) navBtnElement.classList.add('active-nav');
+
+        if(window.innerWidth <= 768) {
+            document.getElementById("navLinks").classList.remove("active");
+        }
+
+        const bLeft = document.getElementById('bamboo-left');
+        const bRight = document.getElementById('bamboo-right');
+        const bTop = document.getElementById('bamboo-top');
+        const bBottom = document.getElementById('bamboo-bottom');
+
+        // Step 1: Bamboos (Dynamically add borders so corners don't overlap while hidden)
+        bLeft.style.borderWidth = '2px'; bLeft.style.height = '100vh'; playSoundEffect(thumpAudio); await delay(100);
+        bRight.style.borderWidth = '2px'; bRight.style.height = '100vh'; playSoundEffect(thumpAudio); await delay(100);
+        bTop.style.borderWidth = '2px'; bTop.style.width = '100vw'; playSoundEffect(thumpAudio); await delay(100);
+        bBottom.style.borderWidth = '2px'; bBottom.style.width = '100vw'; playSoundEffect(thumpAudio); await delay(100);
+
+    // --- SYNCED LOGO START ---
+    if (targetId === 'home') {
+        // Going TO Home: Wait for logs to cover before moving logo to middle
+        setTimeout(() => {
+            brand.classList.remove('brand-nav-mode');
+        }, 600); 
+    } else {
+        // Leaving Home: Wait slightly then move to Navbar
+        setTimeout(() => {
+            brand.classList.add('brand-nav-mode');
+        }, 400);
+    } 
+
+        // Step 2: Logs
+    for (let i = 0; i < logs.length; i++) {
+        logs[i].classList.add('log-active');
+        playSoundEffect(thunkAudio);
+        await delay(50); 
+    }
+
+    await delay(300);
+
+        // Step 3: DOM Switch
+    document.querySelectorAll('.page-section').forEach(sec => {
+        sec.classList.remove('active-page');
+        sec.style.display = 'none';
+    });
+    targetSection.classList.add('active-page');
+    targetSection.style.display = 'block';
+
+    await delay(400);
+
+        // Step 4: Reverse Logs
+    for (let i = logs.length - 1; i >= 0; i--) {
+        logs[i].classList.remove('log-active');
+        playSoundEffect(thunkAudio);
+        await delay(50);
+    }
+
+        // Step 5: Reverse Bamboos
+    bBottom.style.width = '0'; await delay(100);
+    bTop.style.width = '0'; await delay(100);
+    bRight.style.height = '0'; await delay(100);
+    bLeft.style.height = '0'; await delay(100);
+
+        // Completely hide the overlay again and strip the borders to prevent trailing bugs
+        setTimeout(() => {
+          bLeft.style.borderWidth = '0'; bRight.style.borderWidth = '0';
+          bTop.style.borderWidth = '0'; bBottom.style.borderWidth = '0';
+          overlay.classList.remove('is-active');
+        }, 200);
+
+        isTransitioning = false;
+    }
+
+    
+
+    // --- 2. GLOBAL MUTE LOGIC (Completely separate from Music Player) ---
+    const bgVideo = document.getElementById('bgVideoContent');
+    const globalMuteBtn = document.getElementById('globalMuteBtn');
+    let isSiteMuted = true; 
+
+    globalMuteBtn.addEventListener('click', (e) => {
+        e.stopPropagation(); 
+        isSiteMuted = !isSiteMuted;
+        if(bgVideo) bgVideo.muted = isSiteMuted;
+        globalMuteBtn.innerHTML = isSiteMuted ? '<i class="fas fa-volume-xmark"></i>' : '<i class="fas fa-volume-high"></i>';
+    });
+
+
+    // --- 3. MOBILE MENU & CLICK OUTSIDE TO CLOSE ---
+    const navLinks = document.getElementById("navLinks");
+    const menuHamburger = document.getElementById("menuHamburger");
+
+    menuHamburger.addEventListener("click", function(e) {
+      e.stopPropagation();
+      navLinks.classList.toggle("active");
+    });
+
+    navLinks.addEventListener("click", function(e) {
+      if (window.innerWidth <= 768) {
+        if (e.target === this) {
+          navLinks.classList.remove("active");
+        }
+      }
+    });
+
+
+    // --- 4. GOOGLE JWT DECODE & AUTH ---
+    (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+    var chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=';
+    function InvalidCharacterError(message) { this.message = message; }
+    InvalidCharacterError.prototype = new Error();
+    InvalidCharacterError.prototype.name = 'InvalidCharacterError';
+    function polyfill (input) {
+      var str = String(input).replace(/=+$/, '');
+      if (str.length % 4 == 1) throw new InvalidCharacterError("'atob' failed: The string to be decoded is not correctly encoded.");
+      for (var bc = 0, bs, buffer, idx = 0, output = ''; buffer = str.charAt(idx++); ~buffer && (bs = bc % 4 ? bs * 64 + buffer : buffer, bc++ % 4) ? output += String.fromCharCode(255 & bs >> (-2 * bc & 6)) : 0) { buffer = chars.indexOf(buffer); }
+      return output;
+    }
+    module.exports = typeof window !== 'undefined' && window.atob && window.atob.bind(window) || polyfill;
+    },{}],2:[function(require,module,exports){
+    var atob = require('./atob');
+    function b64DecodeUnicode(str) {
+      return decodeURIComponent(atob(str).replace(/(.)/g, function (m, p) {
+        var code = p.charCodeAt(0).toString(16).toUpperCase();
+        if (code.length < 2) code = '0' + code;
+        return '%' + code;
+      }));
+    }
+    module.exports = function(str) {
+      var output = str.replace(/-/g, "+").replace(/_/g, "/");
+      switch (output.length % 4) { case 0: break; case 2: output += "=="; break; case 3: output += "="; break; default: throw "Illegal base64url string!"; }
+      try{ return b64DecodeUnicode(output); } catch (err) { return atob(output); }
+    };
+    },{"./atob":1}],3:[function(require,module,exports){
+    'use strict';
+    var base64_url_decode = require('./base64_url_decode');
+    function InvalidTokenError(message) { this.message = message; }
+    InvalidTokenError.prototype = new Error();
+    InvalidTokenError.prototype.name = 'InvalidTokenError';
+    module.exports = function (token,options) {
+      if (typeof token !== 'string') throw new InvalidTokenError('Invalid token specified');
+      options = options || {};
+      var pos = options.header === true ? 0 : 1;
+      try { return JSON.parse(base64_url_decode(token.split('.')[pos])); } catch (e) { throw new InvalidTokenError('Invalid token specified: ' + e.message); }
+    };
+    module.exports.InvalidTokenError = InvalidTokenError;
+    },{"./base64_url_decode":2}],4:[function(require,module,exports){
+    (function (global){
+    var jwt_decode = require('./lib/index');
+    if (typeof global.window.define == 'function' && global.window.define.amd) {
+      global.window.define('jwt_decode', function () { return jwt_decode; });
+    } else if (global.window) { global.window.jwt_decode = jwt_decode; }
+    }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+    },{"./lib/index":3}]},{},[4]);
+
+    let user = {};
+    function checkUser() {
+      if(localStorage.getItem('user') != null) {
+        user = JSON.parse(localStorage.getItem('user'));
+        displayUser();
+        if(typeof axios !== 'undefined') {
+          axios.post('https://animedstore-api.netlify.app/.netlify/functions/api/signIn', { email: user.email }).then((res) => {
+            console.log(res.data);
+          }).catch(err => console.log(err));
+        }
+      } else {
+        googleSignOut();
+      }
+    }
+
+    function googleSignOut() {
+      document.getElementById('googleInfo').style.display = "none";
+      document.getElementById('signInBtn').hidden = false;
+      window.localStorage.removeItem('user');
+    }
+
+    function displayUser() {
+      document.getElementById('googleInfo').style.display = "flex";
+      document.getElementById('googlePic').src = user.img;
+      document.getElementById('googleName').innerHTML = user.name;
+      document.getElementById('signInBtn').hidden = true;
+    }
+
+    function handleCredentialResponse(response) {
+      let userInfo = jwt_decode(response.credential);
+      user = {
+        'img': userInfo.picture,
+        'name': userInfo.name,
+        'email': userInfo.email
+      }
+      if(typeof axios !== 'undefined') {
+        axios.get('https://animedstore-api.netlify.app/.netlify/functions/api/users').then((res) => { console.log(res.data); });
+        axios.post('https://animedstore-api.netlify.app/.netlify/functions/api/signIn', { email: user.email}).then((res) => { console.log(res.data); });
+      }
+      localStorage.setItem('user', JSON.stringify(user));
+      displayUser();
+    }
+
+    window.onload = function () {
+      google.accounts.id.initialize({
+        client_id: "594234124010-23ugaco82t1moqsuuco1nahdi8sv0adf.apps.googleusercontent.com",
+        callback: handleCredentialResponse
+      });
+      google.accounts.id.renderButton(
+        document.getElementById("signInBtn"),
+        { theme: "outline", size: "large", shape: "pill", type: "standard" }
+      );
+      checkUser();
+    }
+
+    // --- 5. MUSIC PLAYER LOGIC (STRICTLY UNTOUCHED) ---
+    window.addEventListener("DOMContentLoaded", () => {
+      let player;
+      let duration = 0;
+      let lastVolume = 10; 
+      let progressInterval;
+      let currentTitle = "";
+      let currentVideoId = "";
+      let isSeeking = false;
+      let playlistCache = {};
+      let controlsTimeout;
+
+      function setupCustomSlider(sliderId, onChangeCallback) {
+        const slider = document.getElementById(sliderId);
+        const fill = slider.querySelector('.custom-slider-fill');
+        const thumb = slider.querySelector('.custom-slider-thumb');
+        let isDragging = false;
+
+        function getX(e) { return e.type.includes('touch') ? (e.touches[0] || e.changedTouches[0]).clientX : e.clientX; }
+        function updateToClientX(clientX) {
+          const rect = slider.getBoundingClientRect();
+          let x = clientX - rect.left;
+          let percent = x / rect.width;
+          percent = Math.max(0, Math.min(1, percent));
+          fill.style.width = (percent * 100) + '%';
+          thumb.style.left = (percent * 100) + '%';
+          return percent;
+        }
+
+        function startDrag(e) { isDragging = true; const percent = updateToClientX(getX(e)); onChangeCallback(percent, false); }
+        function drag(e) { if (!isDragging) return; slider.classList.add('dragging'); const percent = updateToClientX(getX(e)); onChangeCallback(percent, false); }
+        function endDrag(e) { if (!isDragging) return; isDragging = false; slider.classList.remove('dragging'); const percent = updateToClientX(getX(e)); onChangeCallback(percent, true); }
+
+        slider.addEventListener('mousedown', startDrag); window.addEventListener('mousemove', drag); window.addEventListener('mouseup', endDrag);
+        slider.addEventListener('touchstart', startDrag, { passive: true }); window.addEventListener('touchmove', drag, { passive: false }); window.addEventListener('touchend', endDrag);
+        window.addEventListener('mouseleave', () => { if (isDragging) { isDragging = false; slider.classList.remove('dragging'); } });
+
+        return { setValue: (percent) => { if (!isDragging) { fill.style.width = (percent * 100) + '%'; thumb.style.left = (percent * 100) + '%'; } }, getIsDragging: () => isDragging };
+      }
+
+      const progCtrl = setupCustomSlider('progressSlider', (percent, isFinal) => {
+        if (!player || !player.getDuration) return;
+        const dur = player.getDuration();
+        document.getElementById("currentTime").textContent = formatTime(percent * dur);
+        isSeeking = !isFinal;
+        if (isFinal) player.seekTo(percent * dur, true);
+      });
+
+      const volCtrl = setupCustomSlider('volumeSlider', (percent, isFinal) => {
+        let v = Math.round(percent * 100);
+        player.setVolume(v);
+        if (v === 0) { player.mute(); document.getElementById("muteBtn").innerHTML = '<i class="fas fa-volume-xmark"></i>'; } 
+        else { player.unMute(); document.getElementById("muteBtn").innerHTML = '<i class="fas fa-volume-high"></i>'; lastVolume = v; }
+      });
+
+      function bindHoverMarquee(wrapperId, targetId) {
+        const wrapper = document.getElementById(wrapperId);
+        const target = document.getElementById(targetId);
+        if (!wrapper || !target) return;
+
+        let dist = 0; let dur = 0;
+
+        wrapper.addEventListener('mouseenter', () => {
+          const diff = target.scrollWidth - wrapper.clientWidth;
+          if (diff > 0) {
+            dist = diff + 15; dur = Math.max(2, dist / 25);
+            wrapper.dataset.hovered = "true";
+            target.style.transition = `transform ${dur}s linear`;
+            target.style.transform = `translateX(-${dist}px)`;
+          }
+        });
+
+        wrapper.addEventListener('mouseleave', () => {
+          wrapper.dataset.hovered = "false";
+          const computedStyle = window.getComputedStyle(target);
+          const matrix = new DOMMatrixReadOnly(computedStyle.transform);
+          const currentX = matrix.m41; 
+          target.style.transition = 'none';
+          target.style.transform = `translateX(${currentX}px)`;
+          void target.offsetWidth; 
+          target.style.transition = `transform 0.4s ease-out`; 
+          target.style.transform = `translateX(0px)`;
+        });
+
+        target.addEventListener('transitionend', (e) => {
+          if (e.propertyName !== 'transform' || wrapper.dataset.hovered !== "true") return;
+          if (target.style.transform === `translateX(-${dist}px)`) {
+            target.style.transition = `transform ${dur}s linear`;
+            target.style.transform = `translateX(0px)`;
+          } else if (target.style.transform === `translateX(0px)`) {
+            target.style.transition = `transform ${dur}s linear`;
+            target.style.transform = `translateX(-${dist}px)`;
+          }
+        });
+      }
+
+      window.onYouTubeIframeAPIReady = function () {
+        player = new YT.Player("player", {
+          height: "100%", width: "100%",
+          playerVars: { listType: "playlist", list: 'PLuYtMktKY-7ZPqbNa40mFve9l9lzh7wvo', controls: 0, modestbranding: 0, rel: 0, showinfo: 0, autoplay: 1, mute: 1, playsinline: 1 },
+          events: { onReady: onPlayerReady, onStateChange: onPlayerStateChange },
+        });
+      };
+
+      function updateAspectRatio(videoId) {
+        if (!videoId) return;
+        fetch(`https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`)
+          .then(res => res.json())
+          .then(data => {
+            const card = document.getElementById('playerCard');
+            if (data && data.width && data.height) card.style.aspectRatio = `${data.width} / ${data.height}`;
+            else card.style.aspectRatio = "16 / 9"; 
+          })
+          .catch(() => { document.getElementById('playerCard').style.aspectRatio = "16 / 9"; });
+      }
+
+      function enforceQuality() {
+        if (!player || typeof player.getAvailableQualityLevels !== 'function') return;
+        const qualities = player.getAvailableQualityLevels();
+        if (qualities.includes('large')) player.setPlaybackQuality('large'); 
+        else if (qualities.includes('medium')) player.setPlaybackQuality('medium'); 
+        else player.setPlaybackQuality('medium'); 
+      }
+
+      function updateInfo() {
+        const data = player.getVideoData();
+        if (!data) return;
+        if (data.title) { document.getElementById("title").textContent = data.title; document.getElementById('titleLink').href = `https://www.youtube.com/watch?v=${data.video_id}`; }
+        if (data.author) { document.getElementById("author").textContent = data.author; document.getElementById('authorLink').href = `https://www.youtube.com/results?search_query=${encodeURIComponent(data.author)}`; }
+        if (data.video_id && data.video_id !== currentVideoId) { currentVideoId = data.video_id; updateAspectRatio(currentVideoId); }
+        highlightActivePlaylistItem();
+      }
+
+      function playStrictNext() {
+        const list = player.getPlaylist(); let idx = player.getPlaylistIndex();
+        if (list && idx !== -1) player.playVideoAt((idx + 1) % list.length);
+      }
+
+      function playStrictPrev() {
+        const list = player.getPlaylist(); let idx = player.getPlaylistIndex();
+        if (list && idx !== -1) player.playVideoAt((idx - 1 + list.length) % list.length);
+      }
+
+      function wakeMobileControls() {
+        const wrapper = document.getElementById('videoWrapper');
+        wrapper.classList.add('controls-awake');
+        clearTimeout(controlsTimeout);
+        controlsTimeout = setTimeout(() => { if (player && player.getPlayerState() === YT.PlayerState.PLAYING) { wrapper.classList.remove('controls-awake'); } }, 3000); 
+      }
+
+      function onPlayerStateChange(event) {
+        const overlayControls = document.getElementById("overlayControls");
+        const blurOverlay = document.getElementById("blurOverlay");
+        const playBtnContainer = document.getElementById("overlayPlay");
+        const playIcon = document.getElementById("playIcon");
+
+        if (event.data === YT.PlayerState.ENDED) { updateInfo(); clearInterval(progressInterval); } 
+        else if (event.data === YT.PlayerState.PAUSED) {
+          updateInfo(); clearInterval(progressInterval);
+          overlayControls.classList.add("show"); blurOverlay.classList.add("paused");
+          if (playIcon) playIcon.className = "fas fa-play"; playBtnContainer.classList.remove("paused");
+        } 
+        else {
+          enforceQuality(); 
+          if (event.data === YT.PlayerState.PLAYING) {
+            updateInfo(); progressInterval = setInterval(updateProgress, 1000);
+            duration = player.getDuration(); document.getElementById("duration").textContent = formatTime(duration);
+            if (playIcon) playIcon.className = "fas fa-pause"; playBtnContainer.classList.add("paused");
+          }
+          overlayControls.classList.remove("show"); blurOverlay.classList.remove("paused");
+        }
+      }
+
+      function onPlayerReady() {
+        enforceQuality(); player.playVideo(); volCtrl.setValue(0); document.getElementById("muteBtn").innerHTML = '<i class="fas fa-volume-xmark"></i>';
+        
+        setTimeout(() => { updateInfo(); bindHoverMarquee('titleWrapper', 'titleLink'); bindHoverMarquee('authorWrapper', 'authorLink'); }, 1000);
+
+        document.getElementById("clickCatcher").addEventListener("click", () => {
+          const isTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+          const wrapper = document.getElementById('videoWrapper');
+          if (isTouch) {
+            if (!wrapper.classList.contains('controls-awake')) wakeMobileControls(); 
+            else { togglePlayPause(); wakeMobileControls(); }
+          } else { togglePlayPause(); }
+        });
+
+        document.getElementById("videoWrapper").addEventListener("touchstart", wakeMobileControls, {passive: true});
+        document.getElementById("overlayControls").addEventListener("click", (e) => { if (e.target.closest("#nextBtn") || e.target.closest("#prevBtn") || e.target.closest("#openPlaylistBtn")) return; togglePlayPause(); });
+        
+        document.getElementById("muteBtn").addEventListener("click", toggleMute);
+        document.getElementById("nextBtn").addEventListener("click", (e) => { e.stopPropagation(); playStrictNext(); });
+        document.getElementById("prevBtn").addEventListener("click", (e) => { e.stopPropagation(); playStrictPrev(); });
+
+        document.getElementById("openPlaylistBtn").addEventListener("click", (e) => { e.stopPropagation(); document.getElementById("playlistPanel").classList.add("show"); populatePlaylistUI(); });
+        document.getElementById("closePlaylistBtn").addEventListener("click", () => { document.getElementById("playlistPanel").classList.remove("show"); });
+
+        document.addEventListener("keydown", (e) => {
+          if (e.key === " ") { e.preventDefault(); togglePlayPause(); }
+          if (e.key === "ArrowRight") { e.preventDefault(); player.seekTo(player.getCurrentTime() + 5, true); }
+          if (e.key === "ArrowLeft") { e.preventDefault(); player.seekTo(player.getCurrentTime() - 5, true); }
+          if (e.key === "ArrowUp") { e.preventDefault(); let v = Math.min(100, player.getVolume() + 10); player.setVolume(v); volCtrl.setValue(v / 100); if(v > 0) { player.unMute(); document.getElementById("muteBtn").innerHTML = '<i class="fas fa-volume-high"></i>'; lastVolume = v; } }
+          if (e.key === "ArrowDown") { e.preventDefault(); let v = Math.max(0, player.getVolume() - 10); player.setVolume(v); volCtrl.setValue(v / 100); if(v === 0) { player.mute(); document.getElementById("muteBtn").innerHTML = '<i class="fas fa-volume-xmark"></i>'; } else { lastVolume = v; } }
+          if (e.key === "n") playStrictNext();
+          if (e.key === "p") playStrictPrev();
+          if (e.key === "m") toggleMute();
+        });
+      }
+
+      function parseISO8601Duration(durationStr) {
+        const match = durationStr.match(/PT(\d+H)?(\d+M)?(\d+S)?/);
+        const hours = (parseInt(match[1]) || 0); const minutes = (parseInt(match[2]) || 0); const seconds = (parseInt(match[3]) || 0);
+        let result = ""; if (hours > 0) result += hours + ":"; result += (hours > 0 ? minutes.toString().padStart(2, '0') : minutes) + ":"; result += seconds.toString().padStart(2, '0'); return result;
+      }
+
+      function populatePlaylistUI() {
+        const list = player.getPlaylist();
+        if (!list) return;
+        const container = document.getElementById("playlistItems");
+        container.innerHTML = "";
+        
+        list.forEach((id, index) => {
+          let item = document.createElement('div');
+          item.className = 'playlist-item';
+          item.id = `pl-item-${index}`;
+          item.innerHTML = `
+            <div class="pl-thumb">
+              <img src="https://i.ytimg.com/vi/${id}/mqdefault.jpg">
+              <span class="pl-duration" id="pl-dur-${id}">--:--</span>
+            </div>
+            <div class="pl-info" id="pl-info-wrap-${id}">
+              <div class="pl-title" id="pl-title-${id}">Loading...</div>
+              <div class="pl-author" id="pl-author-${id}"></div>
+            </div>
+          `;
+          item.onclick = () => { player.playVideoAt(index); document.getElementById('playlistPanel').classList.remove('show'); };
+          container.appendChild(item);
+
+          if (playlistCache[id]) {
+            document.getElementById(`pl-title-${id}`).textContent = playlistCache[id].title; document.getElementById(`pl-author-${id}`).textContent = playlistCache[id].author; document.getElementById(`pl-dur-${id}`).textContent = playlistCache[id].duration;
+            bindHoverMarquee(`pl-info-wrap-${id}`, `pl-title-${id}`); bindHoverMarquee(`pl-info-wrap-${id}`, `pl-author-${id}`);
+          } else {
+            fetch(`https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${id}&format=json`)
+              .then(res => res.json())
+              .then(data => {
+                const title = data.title; const author = data.author_name;
+                document.getElementById(`pl-title-${id}`).textContent = title; document.getElementById(`pl-author-${id}`).textContent = author;
+                playlistCache[id] = { title: title, author: author, duration: "--:--" };
+                bindHoverMarquee(`pl-info-wrap-${id}`, `pl-title-${id}`); bindHoverMarquee(`pl-info-wrap-${id}`, `pl-author-${id}`);
+
+                fetch(`https://yt.lemnoslife.com/videos?part=contentDetails&id=${id}`)
+                  .then(r => r.json())
+                  .then(d => {
+                    if(d.items && d.items.length > 0) {
+                      const durStr = parseISO8601Duration(d.items[0].contentDetails.duration);
+                      document.getElementById(`pl-dur-${id}`).textContent = durStr;
+                      playlistCache[id].duration = durStr;
+                    }
+                  }).catch(() => {}); 
+              }).catch(() => { document.getElementById(`pl-title-${id}`).textContent = "Track " + (index+1); });
+          }
+        });
+        highlightActivePlaylistItem();
+      }
+
+      function highlightActivePlaylistItem() {
+        if(!player || !player.getPlaylistIndex) return;
+        const activeIdx = player.getPlaylistIndex();
+        document.querySelectorAll('.playlist-item').forEach(el => el.classList.remove('active'));
+        const activeEl = document.getElementById(`pl-item-${activeIdx}`);
+        if(activeEl) { activeEl.classList.add('active'); activeEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }
+      }
+
+      function togglePlayPause() {
+        const state = player.getPlayerState();
+        if (state === YT.PlayerState.PLAYING) player.pauseVideo(); else player.playVideo();
+      }
+
+      function toggleMute() {
+        const btn = document.getElementById("muteBtn");
+        if (player.isMuted()) { player.unMute(); btn.innerHTML = '<i class="fas fa-volume-high"></i>'; volCtrl.setValue(lastVolume / 100); player.setVolume(lastVolume); } 
+        else { lastVolume = player.getVolume() > 0 ? player.getVolume() : 10; player.mute(); btn.innerHTML = '<i class="fas fa-volume-xmark"></i>'; volCtrl.setValue(0); }
+      }
+
+      function updateProgress() {
+        if (!player || !player.getCurrentTime || isSeeking) return;
+        const current = player.getCurrentTime(); const dur = player.getDuration(); const data = player.getVideoData();
+        if (data && data.title && data.title !== currentTitle) { currentTitle = data.title; updateInfo(); duration = dur; document.getElementById("duration").textContent = formatTime(duration); }
+        if (dur > 0 && !progCtrl.getIsDragging()) { document.getElementById("currentTime").textContent = formatTime(current); progCtrl.setValue(current / dur); }
+      }
+
+      function formatTime(seconds) {
+        if (!seconds || isNaN(seconds)) return "0:00";
+        const m = Math.floor(seconds / 60); const s = Math.floor(seconds % 60).toString().padStart(2, "0"); return `${m}:${s}`;
+      }
+
+      const tag = document.createElement("script"); tag.src = "https://www.youtube.com/iframe_api"; document.head.appendChild(tag);
+    });
+  </script>
+</body>
+</html>
