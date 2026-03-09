@@ -487,11 +487,12 @@
       padding: 12px 24px;
       font-size: 18px;
       background: #4285F4;
+      position: fixed;
       color: white;
       border: none;
       border-radius: 4px;
       cursor: pointer;
-      z-index: 50;
+      z-index: 500;
     }
     .bbtn:hover { background: #357ae8; }
     #status { margin-top: 30px; font-size: 16px; }
@@ -500,9 +501,6 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
-
-  <h1>Sign in with Google</h1>
-  <p>Using Supabase Auth — no framework needed!</p>
 
   <button class="bbtn" id="google-login">Sign in with Google</button>
 
@@ -2795,6 +2793,7 @@ function closePaymentPopup() { document.getElementById('paymentModal').style.dis
   </script>
 </body>
 </html>
+
 
 
 
