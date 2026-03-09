@@ -10,6 +10,7 @@
   <script src="https://code.jquery.com/jquery-3.6.0.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
   <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   
   <style>
     /* --- GLOBAL STYLES --- */
@@ -2307,6 +2308,10 @@ function closePaymentPopup() { document.getElementById('paymentModal').style.dis
     }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
     },{"./lib/index":3}]},{},[4]);
 
+    const supabaseUrl = 'https://lutfxehnekairdjaseox.supabase.co';
+    const supabaseKey = 'sb_publishable_z6FMPrvEdi3FCBkgyXn3vA_r2j24_uE';
+    const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+
     let user = {};
     function checkUser() {
       if(localStorage.getItem('user') != null) {
@@ -2322,7 +2327,8 @@ function closePaymentPopup() { document.getElementById('paymentModal').style.dis
       }
     }
 
-    function googleSignOut() {
+    async function googleSignOut() {
+      await supabaseClient.auth.signOut();
       document.getElementById('googleInfo').style.display = "none";
       document.getElementById('signInBtn').hidden = false;
       window.localStorage.removeItem('user');
@@ -2335,17 +2341,42 @@ function closePaymentPopup() { document.getElementById('paymentModal').style.dis
       document.getElementById('signInBtn').hidden = true;
     }
 
-    function handleCredentialResponse(response) {
-      let userInfo = jwt_decode(response.credential);
-      user = {
-        'img': userInfo.picture,
-        'name': userInfo.name,
-        'email': userInfo.email
+    async function handleCredentialResponse(response) {
+      const { data, error } = await supabaseClient.auth.signInWithIdToken({
+        provider: 'google',
+        token: response.credential,
+      });
+
+      if (error) {
+        console.error('Supabase Auth Error:', error.message);
+        alert('Authentication failed: ' + error.message);
+        return;
       }
+
+      const supabaseUser = data.user;
+      user = {
+        'img': supabaseUser.user_metadata.avatar_url || supabaseUser.user_metadata.picture,
+        'name': supabaseUser.user_metadata.full_name || supabaseUser.user_metadata.name,
+        'email': supabaseUser.email
+      };
+
+      // Sync with Supabase 'users' table
+      const { error: syncError } = await supabaseClient
+        .from('users')
+        .upsert({ 
+          id: supabaseUser.id, 
+          email: user.email, 
+          name: user.name, 
+          avatar_url: user.img,
+          last_sign_in: new Date().toISOString()
+        });
+
+      if (syncError) console.error('Data Sync Error:', syncError.message);
+
       if(typeof axios !== 'undefined') {
-        axios.get('https://animedstore-api.netlify.app/.netlify/functions/api/users').then((res) => { console.log(res.data); });
         axios.post('https://animedstore-api.netlify.app/.netlify/functions/api/signIn', { email: user.email}).then((res) => { console.log(res.data); });
       }
+      
       localStorage.setItem('user', JSON.stringify(user));
       displayUser();
     }
