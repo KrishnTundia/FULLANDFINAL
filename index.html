@@ -483,16 +483,7 @@
       pointer-events: none;
       margin: 0;
     }
-  </style>
-
-    <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Supabase Google Sign-In (Plain HTML)</title>
-  <!-- Supabase JS client (UMD build via CDN) -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <style>
-    body { font-family: sans-serif; text-align: center; padding: 50px; }
-    button {
+        bbtn {
       padding: 12px 24px;
       font-size: 18px;
       background: #4285F4;
@@ -502,28 +493,25 @@
       cursor: pointer;
       z-index: 50;
     }
-    button:hover { background: #357ae8; }
+    bbtn:hover { background: #357ae8; }
     #status { margin-top: 30px; font-size: 16px; }
   </style>
-</head>
-<body>
-  <!DOCTYPE html>
 
-
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 
   <h1>Sign in with Google</h1>
   <p>Using Supabase Auth — no framework needed!</p>
 
-  <button id="google-login">Sign in with Google</button>
+  <button class="bbtn" id="google-login">Sign in with Google</button>
 
   <div id="status">Not signed in</div>
 
   <script>
     // === Replace these with YOUR values ===
-    const SUPABASE_URL    = 'https://your-project-ref.supabase.co';          // ← from Supabase dashboard → Settings → API
-    const SUPABASE_ANON_KEY = 'your-anon-public-key-here';                   // ← same place, anon key
+    const SUPABASE_URL    = 'https://lutfxehnekairdjaseox.supabase.co';          // ← from Supabase dashboard → Settings → API
+    const SUPABASE_ANON_KEY = 'sb_publishable_z6FMPrvEdi3FCBkgyXn3vA_r2j24_uE';                   // ← same place, anon key
 
     // Create Supabase client (global so you can use it anywhere)
     const supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -2807,6 +2795,7 @@ function closePaymentPopup() { document.getElementById('paymentModal').style.dis
   </script>
 </body>
 </html>
+
 
 
 
