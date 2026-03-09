@@ -10,7 +10,6 @@
   <script src="https://code.jquery.com/jquery-3.6.0.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
   <script src="https://accounts.google.com/gsi/client" async defer></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   
   <style>
     /* --- GLOBAL STYLES --- */
@@ -483,86 +482,11 @@
       pointer-events: none;
       margin: 0;
     }
-      .bbtn {
-      padding: 12px 24px;
-      font-size: 18px;
-      background: #4285F4;
-      position: fixed;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      z-index: 500;
-    }
-    .bbtn:hover { background: #357ae8; }
-    #status { margin-top: 30px; font-size: 16px; }
   </style>
-
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
-
-  <button class="bbtn" id="google-login">Sign in with Google</button>
-
-  <div id="status">Not signed in</div>
-
-  <script>
-    // === Replace these with YOUR values ===
-    const SUPABASE_URL    = 'https://lutfxehnekairdjaseox.supabase.co';          // ← from Supabase dashboard → Settings → API
-    const SUPABASE_ANON_KEY = 'sb_publishable_z6FMPrvEdi3FCBkgyXn3vA_r2j24_uE';                   // ← same place, anon key
-
-    // Create Supabase client (global so you can use it anywhere)
-    const supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-    // Optional: after page loads, check if user is already signed in
-    async function checkUser() {
-      const { data: { user } } = await supabase.auth.getUser();
-      const statusEl = document.getElementById('status');
-
-      if (user) {
-        statusEl.innerHTML = `Welcome, ${user.email || user.user_metadata?.full_name || 'user'}! 🎉<br>
-          <button onclick="signOut()">Sign Out</button>`;
-      } else {
-        statusEl.innerHTML = 'Not signed in';
-      }
-    }
-
-    // Sign in handler
-    document.getElementById('google-login').addEventListener('click', async () => {
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          // Very important for Vercel / custom domain:
-          // redirect back to your own page (or home) after login
-          redirectTo: window.location.origin + '/',   // ← or '/dashboard', etc.
-          // Optional: ask for extra scopes if needed (e.g. calendar, drive)
-          // queryParams: { access_type: 'offline', prompt: 'consent' }
-        }
-      });
-
-      if (error) {
-        console.error('Error:', error);
-        alert('Something went wrong: ' + error.message);
-      }
-      // If no error → Supabase redirects to Google → then back to your redirectTo URL
-    });
-
-    // Sign out function
-    async function signOut() {
-      await supabase.auth.signOut();
-      checkUser();
-    }
-
-    // Run on load + listen for auth changes
-    checkUser();
-    supabase.auth.onAuthStateChange((event, session) => {
-      console.log(event, session);
-      checkUser();
-    });
-  </script>
-
   <div class="global-video-bg">
-  <video src="https://stock.adobe.com/search/video?k=mount%25252525252525252Bfuji&asset_id=1746106027" type="video/mp4" autoplay loop muted playsinline id="bgVideoContent"></video>
+  <video src="https://www.youtube.com/watch?v=JqxZGXQf0qg" type="video/mp4" autoplay loop muted playsinline id="bgVideoContent"></video>
   </div>
 
   <audio id="thumpSnd" src="https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3" preload="auto"></audio>
@@ -597,7 +521,7 @@
       
 <section class="profile" id="profileSection">
     
-    <div id="customGoogleBtn google-login" class="theme-google-btn-wrapper bbtn">
+    <div id="customGoogleBtn" class="theme-google-btn-wrapper">
         <div class="theme-google-btn-ui">
             <svg version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
                 <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"></path>
@@ -1786,7 +1710,7 @@ function closePaymentPopup() { document.getElementById('paymentModal').style.dis
         top: 0; left: 0;
         width: 100vw; height: 100vh;
         overflow-y: auto; overflow-x: hidden;
-        z-index: 10; 
+        z-index: 0;
         padding-top: 120px; 
         padding-bottom: 250px; 
         scrollbar-width: none;
@@ -2537,7 +2461,7 @@ function closePaymentPopup() { document.getElementById('paymentModal').style.dis
       window.onYouTubeIframeAPIReady = function () {
         player = new YT.Player("player", {
           height: "100%", width: "100%",
-          playerVars: { listType: "playlist", list: 'PL_adZhO9fB0sO-tgDxLtC29wQ-T_Xs5Y2', controls: 0, modestbranding: 0, rel: 0, showinfo: 0, autoplay: 1, mute: 1, playsinline: 1 },
+          playerVars: { listType: "playlist", list: 'PLuYtMktKY-7ZPqbNa40mFve9l9lzh7wvo', controls: 0, modestbranding: 0, rel: 0, showinfo: 0, autoplay: 1, mute: 1, playsinline: 1 },
           events: { onReady: onPlayerReady, onStateChange: onPlayerStateChange },
         });
       };
@@ -2737,67 +2661,5 @@ function closePaymentPopup() { document.getElementById('paymentModal').style.dis
       const tag = document.createElement("script"); tag.src = "https://www.youtube.com/iframe_api"; document.head.appendChild(tag);
     });
   </script>
-  <script>
-    // === Replace these with YOUR values ===
-    const SUPABASE_URL    = 'https://lutfxehnekairdjaseox.supabase.co';          // ← from Supabase dashboard → Settings → API
-    const SUPABASE_ANON_KEY = 'sb_publishable_z6FMPrvEdi3FCBkgyXn3vA_r2j24_uE';                   // ← same place, anon key
-
-    // Create Supabase client (global so you can use it anywhere)
-    const supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-    // Optional: after page loads, check if user is already signed in
-    async function checkUser() {
-      const { data: { user } } = await supabase.auth.getUser();
-      const statusEl = document.getElementById('status');
-
-      if (user) {
-        statusEl.innerHTML = `Welcome, ${user.email || user.user_metadata?.full_name || 'user'}! 🎉<br>
-          <button onclick="signOut()">Sign Out</button>`;
-      } else {
-        statusEl.innerHTML = 'Not signed in';
-      }
-    }
-
-    // Sign in handler
-    document.getElementById('google-login').addEventListener('click', async () => {
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          // Very important for Vercel / custom domain:
-          // redirect back to your own page (or home) after login
-          redirectTo: window.location.origin + '/',   // ← or '/dashboard', etc.
-          // Optional: ask for extra scopes if needed (e.g. calendar, drive)
-          // queryParams: { access_type: 'offline', prompt: 'consent' }
-        }
-      });
-
-      if (error) {
-        console.error('Error:', error);
-        alert('Something went wrong: ' + error.message);
-      }
-      // If no error → Supabase redirects to Google → then back to your redirectTo URL
-    });
-
-    // Sign out function
-    async function signOut() {
-      await supabase.auth.signOut();
-      checkUser();
-    }
-
-    // Run on load + listen for auth changes
-    checkUser();
-    supabase.auth.onAuthStateChange((event, session) => {
-      console.log(event, session);
-      checkUser();
-    });
-  </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
