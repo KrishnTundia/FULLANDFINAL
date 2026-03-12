@@ -10,7 +10,6 @@
   <script src="https://code.jquery.com/jquery-3.6.0.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
   <script src="https://accounts.google.com/gsi/client" async defer></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   
   <style>
     /* --- GLOBAL STYLES --- */
@@ -487,7 +486,7 @@
 </head>
 <body>
   <div class="global-video-bg">
-  <video src="https://www.youtube.com/watch?v=JqxZGXQf0qg" type="video/mp4" autoplay loop muted playsinline id="bgVideoContent"></video>
+  <video src="anime.mp4" type="video/mp4" autoplay loop muted playsinline id="bgVideoContent"></video>
   </div>
 
   <audio id="thumpSnd" src="https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3" preload="auto"></audio>
@@ -667,7 +666,7 @@
 .google-btn-hidden {
     position: absolute;
     top: -5px; left: -5px; right: -5px; bottom: -5px;
-    opacity: 0; /* Fully invisible */
+    opacity: 100%; /* Fully invisible */
     z-index: 10;
     display: flex;
     align-items: center;
@@ -698,13 +697,13 @@
 
     window.onload = function () {
       google.accounts.id.initialize({
-        client_id: "894319133464-kurgea24d56683eqat102m0p1nug08u4.apps.googleusercontent.com",
+        client_id: "594234124010-23ugaco82t1moqsuuco1nahdi8sv0adf.apps.googleusercontent.com",
         callback: handleCredentialResponse
       });
       google.accounts.id.renderButton(
         document.getElementById("signInBtn"),
         // Added 'width: 300' so the invisible button spans wide enough to catch clicks
-        { theme: "outline", size: "large", shape: "pill", type: "standard", width: 300 }
+        { theme: "outline", size: "large", shape: "pill", type: "standard", width: "500" , logo_alignment: "center" }
       );
       
       if(localStorage.getItem('user')) { 
@@ -712,204 +711,7 @@
         displayUser(); 
       }
     }</script>
-    <style id="account-styles">
-    #account {
-        position: absolute; top: 0; left: 0; width: 100vw; height: 100vh;
-        overflow-y: auto; overflow-x: hidden; z-index: 10; 
-        padding-top: 120px; padding-bottom: 250px; 
-        scrollbar-width: none; display: none; color: #fff; box-sizing: border-box;
-    }
-    #account.active-page { display: block; }
-    #account::-webkit-scrollbar { display: none; }
 
-    .account-master-container {
-        width: 100%; max-width: 1200px;
-        margin: 0 auto; padding: 0 30px;
-        display: flex; flex-direction: column; gap: 40px;
-    }
-
-    /* Top Profile Card */
-    .account-profile-card {
-        background: rgba(5, 40, 46, 0.2) url('fabric-1-light.png');
-        backdrop-filter: blur(12px) brightness(1) saturate(1.5);
-        border: 1px solid rgba(255, 255, 255, 0.3);
-        border-radius: 20px; padding: 30px;
-        display: flex; align-items: center; justify-content: space-between;
-        flex-wrap: wrap; gap: 20px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-    }
-
-    .acc-user-info { display: flex; align-items: center; gap: 20px; flex: 1; min-width: 250px; }
-    .acc-avatar {
-        width: 80px; height: 80px; border-radius: 50%;
-        border: 2px solid #fff; object-fit: cover; background: rgba(0,0,0,0.5);
-    }
-    .acc-details { display: flex; flex-direction: column; gap: 5px; }
-    .acc-details h2 { font-size: 1.5rem; font-weight: 800; text-transform: uppercase; margin: 0; line-height: 1.1; }
-    .acc-details p { font-size: 0.9rem; color: rgba(255,255,255,0.7); margin: 0; }
-
-    .acc-stats-wrapper { display: flex; gap: 40px; align-items: center; }
-    .acc-stat-box { display: flex; flex-direction: column; align-items: center; gap: 5px; }
-    .acc-stat-box .stat-label { font-size: 0.8rem; font-weight: 700; color: rgba(255,255,255,0.7); letter-spacing: 1px; }
-    .acc-stat-box .stat-val { font-size: 1.2rem; font-weight: 800; color: #fff; }
-
-    .acc-signout-btn {
-        padding: 10px 25px; border-radius: 30px; background: rgba(255, 255, 255, 0.1);
-        border: 1px solid rgba(255, 255, 255, 0.4); color: #fff; font-weight: 800; font-size: 0.9rem;
-        cursor: pointer; transition: 0.3s; text-transform: uppercase;
-    }
-    .acc-signout-btn:hover { background: #fff; color: #000; transform: scale(1.05); }
-
-    /* Purchase History Section */
-    .account-history-wrapper {
-        display: flex; flex-direction: column; gap: 20px;
-        background: rgba(5, 40, 46, 0.2) url('fabric-1-light.png');
-        backdrop-filter: blur(12px) brightness(1) saturate(1.5);
-        border: 1px solid rgba(255, 255, 255, 0.3);
-        border-radius: 20px; padding: 30px;
-    }
-    
-    .history-heading {
-        font-size: 1.3rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: #fff; margin-bottom: 10px;
-    }
-
-    /* History Grid Layout */
-    .history-grid-header {
-        display: grid; grid-template-columns: 80px 2fr 1fr 1fr 1fr; gap: 15px;
-        padding: 0 20px 10px 20px; border-bottom: 1px solid rgba(255,255,255,0.2);
-        font-size: 0.8rem; font-weight: 700; color: rgba(255,255,255,0.6); text-transform: uppercase;
-    }
-    .history-list { display: flex; flex-direction: column; gap: 15px; margin-top: 10px; }
-    
-    .history-item-row {
-        display: grid; grid-template-columns: 80px 2fr 1fr 1fr 1fr; gap: 15px; align-items: center;
-        background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 12px; padding: 15px 20px; transition: 0.2s;
-    }
-    .history-item-row:hover { background: rgba(255, 255, 255, 0.1); }
-    
-    .hist-img { width: 60px; height: 60px; border-radius: 8px; object-fit: cover; background: rgba(0,0,0,0.5); }
-    .hist-name { font-weight: 700; font-size: 0.95rem; }
-    .hist-price { font-weight: 600; color: rgba(255,255,255,0.8); }
-    .hist-qty { font-weight: 600; color: rgba(255,255,255,0.8); }
-    .hist-date { font-size: 0.85rem; color: rgba(255,255,255,0.6); }
-
-    .empty-history { text-align: center; padding: 40px; color: rgba(255,255,255,0.5); font-style: italic; font-weight: 500;}
-
-    /* Mobile Adjustments */
-    @media screen and (max-width: 768px) {
-        .account-master-container { padding: 0 15px; }
-        .account-profile-card { flex-direction: column; text-align: center; gap: 30px; }
-        .acc-user-info { flex-direction: column; }
-        .history-grid-header { display: none; }
-        .history-item-row {
-            grid-template-columns: 60px 1fr; grid-template-rows: auto auto auto; gap: 10px;
-        }
-        .hist-img { grid-row: 1 / span 3; }
-        .hist-name { grid-column: 2; grid-row: 1; }
-        .hist-price { grid-column: 2; grid-row: 2; }
-        .hist-qty::before { content: "Qty: "; }
-        .hist-date { grid-column: 2; grid-row: 3; }
-    }
-</style>
-
-<section id="account" class="page-section" onscroll="handleAccountScroll()">
-    <div class="account-master-container">
-        
-        <div class="account-profile-card">
-            <div class="acc-user-info">
-                <img src="" id="accProfilePic" class="acc-avatar" alt="Profile" onerror="this.src='https://via.placeholder.com/80/000000/FFFFFF/?text=User'">
-                <div class="acc-details">
-                    <h2 id="accProfileName">Loading...</h2>
-                    <p id="accProfileEmail">loading@email.com</p>
-                </div>
-            </div>
-            
-            <div class="acc-stats-wrapper">
-                <div class="acc-stat-box">
-                    <span class="stat-label">ITEMS</span>
-                    <span class="stat-val" id="accTotalItems">0</span>
-                </div>
-                <div class="acc-stat-box">
-                    <span class="stat-label">SPENT</span>
-                    <span class="stat-val" id="accTotalSpent">₹0</span>
-                </div>
-            </div>
-
-            <button class="acc-signout-btn" onclick="executeSignOut()">Sign Out</button>
-        </div>
-
-        <div class="account-history-wrapper">
-            <h3 class="history-heading">Purchase History</h3>
-            
-            <div class="history-grid-header">
-                <span>Items</span>
-                <span>Name</span>
-                <span>Price</span>
-                <span>Quantity</span>
-                <span>Date</span>
-            </div>
-
-            <div class="history-list" id="purchaseHistoryList">
-                <div class="empty-history">No purchases found. Time to hit the shop.</div>
-            </div>
-        </div>
-
-    </div>
-</section>
-
-<script id="account-logic-engine">
-    // --- 1. NAVBAR SCROLL EFFECT ---
-    function handleAccountScroll() {
-        const accountSect = document.getElementById('account');
-        const mainNav = document.querySelector('.navbar'); 
-        if(accountSect.scrollTop > 20) {
-            if(mainNav) mainNav.classList.add('shop-glassy-nav');
-        } else {
-            if(mainNav) mainNav.classList.remove('shop-glassy-nav');
-        }
-    }
-
-    // --- 2. UPDATE DISPLAY USER FUNCTION ---
-    // Overrides the existing displayUser to also populate the Account dashboard
-    function displayUser() {
-        // Update Navbar Elements
-        document.getElementById('googleInfo').style.display = "flex";
-        document.getElementById('googlePic').src = user.img;
-        document.getElementById('googleName').innerText = user.name;
-        document.getElementById('customGoogleBtn').style.display = "none";
-
-        // Update Account Dashboard Elements
-        document.getElementById('accProfilePic').src = user.img;
-        document.getElementById('accProfileName').innerText = user.name;
-        document.getElementById('accProfileEmail').innerText = user.email || "User Email";
-
-        // Re-bind marquee if function exists
-        if(typeof bindProfileMarquee === "function") {
-            bindProfileMarquee('googleNameWrapper', 'googleName'); 
-        }
-    }
-
-    // --- 3. SIGN OUT LOGIC ---
-    function executeSignOut() {
-        // Reset Navbar UI
-        document.getElementById('googleInfo').style.display = "none";
-        document.getElementById('customGoogleBtn').style.display = "flex";
-        
-        // Clear Local Storage
-        window.localStorage.removeItem('user');
-        if(typeof user !== 'undefined') {
-            user = {};
-        }
-
-        // Redirect to Home if currently on Account page
-        const accountPage = document.getElementById('account');
-        if (accountPage.classList.contains('active-page')) {
-            const homeBtn = document.querySelector('.nav-links ul li a'); // Grabs the first nav button (Home)
-            navigateSPA('home', homeBtn);
-        }
-    }
-</script>
 <style id="shop-styles">
     /* --- SHOP CORE & FREEFLOW --- */
     #shop {
@@ -1711,7 +1513,7 @@ function closePaymentPopup() { document.getElementById('paymentModal').style.dis
         top: 0; left: 0;
         width: 100vw; height: 100vh;
         overflow-y: auto; overflow-x: hidden;
-        z-index: 0;
+        z-index: 10; 
         padding-top: 120px; 
         padding-bottom: 250px; 
         scrollbar-width: none;
@@ -2108,7 +1910,204 @@ function closePaymentPopup() { document.getElementById('paymentModal').style.dis
     });
 </script>
 
+    <style id="account-styles">
+    #account {
+        position: absolute; top: 0; left: 0; width: 100vw; height: 100vh;
+        overflow-y: auto; overflow-x: hidden; z-index: 10; 
+        padding-top: 120px; padding-bottom: 250px; 
+        scrollbar-width: none; display: none; color: #fff; box-sizing: border-box;
+    }
+    #account.active-page { display: block; }
+    #account::-webkit-scrollbar { display: none; }
 
+    .account-master-container {
+        width: 100%; max-width: 1200px;
+        margin: 0 auto; padding: 0 30px;
+        display: flex; flex-direction: column; gap: 40px;
+    }
+
+    /* Top Profile Card */
+    .account-profile-card {
+        background: rgba(5, 40, 46, 0.2) url('fabric-1-light.png');
+        backdrop-filter: blur(12px) brightness(1) saturate(1.5);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 20px; padding: 30px;
+        display: flex; align-items: center; justify-content: space-between;
+        flex-wrap: wrap; gap: 20px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    }
+
+    .acc-user-info { display: flex; align-items: center; gap: 20px; flex: 1; min-width: 250px; }
+    .acc-avatar {
+        width: 80px; height: 80px; border-radius: 50%;
+        border: 2px solid #fff; object-fit: cover; background: rgba(0,0,0,0.5);
+    }
+    .acc-details { display: flex; flex-direction: column; gap: 5px; }
+    .acc-details h2 { font-size: 1.5rem; font-weight: 800; text-transform: uppercase; margin: 0; line-height: 1.1; }
+    .acc-details p { font-size: 0.9rem; color: rgba(255,255,255,0.7); margin: 0; }
+
+    .acc-stats-wrapper { display: flex; gap: 40px; align-items: center; }
+    .acc-stat-box { display: flex; flex-direction: column; align-items: center; gap: 5px; }
+    .acc-stat-box .stat-label { font-size: 0.8rem; font-weight: 700; color: rgba(255,255,255,0.7); letter-spacing: 1px; }
+    .acc-stat-box .stat-val { font-size: 1.2rem; font-weight: 800; color: #fff; }
+
+    .acc-signout-btn {
+        padding: 10px 25px; border-radius: 30px; background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.4); color: #fff; font-weight: 800; font-size: 0.9rem;
+        cursor: pointer; transition: 0.3s; text-transform: uppercase;
+    }
+    .acc-signout-btn:hover { background: #fff; color: #000; transform: scale(1.05); }
+
+    /* Purchase History Section */
+    .account-history-wrapper {
+        display: flex; flex-direction: column; gap: 20px;
+        background: rgba(5, 40, 46, 0.2) url('fabric-1-light.png');
+        backdrop-filter: blur(12px) brightness(1) saturate(1.5);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 20px; padding: 30px;
+    }
+    
+    .history-heading {
+        font-size: 1.3rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: #fff; margin-bottom: 10px;
+    }
+
+    /* History Grid Layout */
+    .history-grid-header {
+        display: grid; grid-template-columns: 80px 2fr 1fr 1fr 1fr; gap: 15px;
+        padding: 0 20px 10px 20px; border-bottom: 1px solid rgba(255,255,255,0.2);
+        font-size: 0.8rem; font-weight: 700; color: rgba(255,255,255,0.6); text-transform: uppercase;
+    }
+    .history-list { display: flex; flex-direction: column; gap: 15px; margin-top: 10px; }
+    
+    .history-item-row {
+        display: grid; grid-template-columns: 80px 2fr 1fr 1fr 1fr; gap: 15px; align-items: center;
+        background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px; padding: 15px 20px; transition: 0.2s;
+    }
+    .history-item-row:hover { background: rgba(255, 255, 255, 0.1); }
+    
+    .hist-img { width: 60px; height: 60px; border-radius: 8px; object-fit: cover; background: rgba(0,0,0,0.5); }
+    .hist-name { font-weight: 700; font-size: 0.95rem; }
+    .hist-price { font-weight: 600; color: rgba(255,255,255,0.8); }
+    .hist-qty { font-weight: 600; color: rgba(255,255,255,0.8); }
+    .hist-date { font-size: 0.85rem; color: rgba(255,255,255,0.6); }
+
+    .empty-history { text-align: center; padding: 40px; color: rgba(255,255,255,0.5); font-style: italic; font-weight: 500;}
+
+    /* Mobile Adjustments */
+    @media screen and (max-width: 768px) {
+        .account-master-container { padding: 0 15px; }
+        .account-profile-card { flex-direction: column; text-align: center; gap: 30px; }
+        .acc-user-info { flex-direction: column; }
+        .history-grid-header { display: none; }
+        .history-item-row {
+            grid-template-columns: 60px 1fr; grid-template-rows: auto auto auto; gap: 10px;
+        }
+        .hist-img { grid-row: 1 / span 3; }
+        .hist-name { grid-column: 2; grid-row: 1; }
+        .hist-price { grid-column: 2; grid-row: 2; }
+        .hist-qty::before { content: "Qty: "; }
+        .hist-date { grid-column: 2; grid-row: 3; }
+    }
+</style>
+
+<section id="account" class="page-section" onscroll="handleAccountScroll()">
+    <div class="account-master-container">
+        
+        <div class="account-profile-card">
+            <div class="acc-user-info">
+                <img src="" id="accProfilePic" class="acc-avatar" alt="Profile">
+                <div class="acc-details">
+                    <h2 id="accProfileName">Loading...</h2>
+                    <p id="accProfileEmail">loading@email.com</p>
+                </div>
+            </div>
+            
+            <div class="acc-stats-wrapper">
+                <div class="acc-stat-box">
+                    <span class="stat-label">ITEMS</span>
+                    <span class="stat-val" id="accTotalItems">0</span>
+                </div>
+                <div class="acc-stat-box">
+                    <span class="stat-label">SPENT</span>
+                    <span class="stat-val" id="accTotalSpent">₹0</span>
+                </div>
+            </div>
+
+            <button class="acc-signout-btn" onclick="executeSignOut()">Sign Out</button>
+        </div>
+
+        <div class="account-history-wrapper">
+            <h3 class="history-heading">Purchase History</h3>
+            
+            <div class="history-grid-header">
+                <span>Items</span>
+                <span>Name</span>
+                <span>Price</span>
+                <span>Quantity</span>
+                <span>Date</span>
+            </div>
+
+            <div class="history-list" id="purchaseHistoryList">
+                <div class="empty-history">No purchases found. Time to hit the shop.</div>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+<script id="account-logic-engine">
+    // --- 1. NAVBAR SCROLL EFFECT ---
+    function handleAccountScroll() {
+        const accountSect = document.getElementById('account');
+        const mainNav = document.querySelector('.navbar'); 
+        if(accountSect.scrollTop > 20) {
+            if(mainNav) mainNav.classList.add('shop-glassy-nav');
+        } else {
+            if(mainNav) mainNav.classList.remove('shop-glassy-nav');
+        }
+    }
+
+    // --- 2. UPDATE DISPLAY USER FUNCTION ---
+    // Overrides the existing displayUser to also populate the Account dashboard
+    function displayUser() {
+        // Update Navbar Elements
+        document.getElementById('googleInfo').style.display = "flex";
+        document.getElementById('googlePic').src = user.img;
+        document.getElementById('googleName').innerText = user.name;
+        document.getElementById('customGoogleBtn').style.display = "none";
+
+        // Update Account Dashboard Elements
+        document.getElementById('accProfilePic').src = user.img;
+        document.getElementById('accProfileName').innerText = user.name;
+        document.getElementById('accProfileEmail').innerText = user.email || "User Email";
+
+        // Re-bind marquee if function exists
+        if(typeof bindProfileMarquee === "function") {
+            bindProfileMarquee('googleNameWrapper', 'googleName'); 
+        }
+    }
+
+    // --- 3. SIGN OUT LOGIC ---
+    function executeSignOut() {
+        // Reset Navbar UI
+        document.getElementById('googleInfo').style.display = "none";
+        document.getElementById('customGoogleBtn').style.display = "flex";
+        
+        // Clear Local Storage
+        window.localStorage.removeItem('user');
+        if(typeof user !== 'undefined') {
+            user = {};
+        }
+
+        // Redirect to Home if currently on Account page
+        const accountPage = document.getElementById('account');
+        if (accountPage.classList.contains('active-page')) {
+            const homeBtn = document.querySelector('.nav-links ul li a'); // Grabs the first nav button (Home)
+            navigateSPA('home', homeBtn);
+        }
+    }
+</script>
   <script>
     // --- 1. SPA WOODEN/BAMBOO TRANSITIONS ---
     const logsContainer = document.getElementById('logs-container');
@@ -2308,10 +2307,6 @@ function closePaymentPopup() { document.getElementById('paymentModal').style.dis
     }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
     },{"./lib/index":3}]},{},[4]);
 
-    const supabaseUrl = 'https://lutfxehnekairdjaseox.supabase.co';
-    const supabaseKey = 'sb_publishable_z6FMPrvEdi3FCBkgyXn3vA_r2j24_uE';
-    const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
-
     let user = {};
     function checkUser() {
       if(localStorage.getItem('user') != null) {
@@ -2327,8 +2322,7 @@ function closePaymentPopup() { document.getElementById('paymentModal').style.dis
       }
     }
 
-    async function googleSignOut() {
-      await supabaseClient.auth.signOut();
+    function googleSignOut() {
       document.getElementById('googleInfo').style.display = "none";
       document.getElementById('signInBtn').hidden = false;
       window.localStorage.removeItem('user');
@@ -2341,54 +2335,29 @@ function closePaymentPopup() { document.getElementById('paymentModal').style.dis
       document.getElementById('signInBtn').hidden = true;
     }
 
-    async function handleCredentialResponse(response) {
-      const { data, error } = await supabaseClient.auth.signInWithIdToken({
-        provider: 'google',
-        token: response.credential,
-      });
-
-      if (error) {
-        console.error('Supabase Auth Error:', error.message);
-        alert('Authentication failed: ' + error.message);
-        return;
-      }
-
-      const supabaseUser = data.user;
+    function handleCredentialResponse(response) {
+      let userInfo = jwt_decode(response.credential);
       user = {
-        'img': supabaseUser.user_metadata.avatar_url || supabaseUser.user_metadata.picture,
-        'name': supabaseUser.user_metadata.full_name || supabaseUser.user_metadata.name,
-        'email': supabaseUser.email
-      };
-
-      // Sync with Supabase 'users' table
-      const { error: syncError } = await supabaseClient
-        .from('users')
-        .upsert({ 
-          id: supabaseUser.id, 
-          email: user.email, 
-          name: user.name, 
-          avatar_url: user.img,
-          last_sign_in: new Date().toISOString()
-        });
-
-      if (syncError) console.error('Data Sync Error:', syncError.message);
-
+        'img': userInfo.picture,
+        'name': userInfo.name,
+        'email': userInfo.email
+      }
       if(typeof axios !== 'undefined') {
+        axios.get('https://animedstore-api.netlify.app/.netlify/functions/api/users').then((res) => { console.log(res.data); });
         axios.post('https://animedstore-api.netlify.app/.netlify/functions/api/signIn', { email: user.email}).then((res) => { console.log(res.data); });
       }
-      
       localStorage.setItem('user', JSON.stringify(user));
       displayUser();
     }
 
     window.onload = function () {
       google.accounts.id.initialize({
-        client_id: "894319133464-kurgea24d56683eqat102m0p1nug08u4.apps.googleusercontent.com",
+        client_id: "594234124010-23ugaco82t1moqsuuco1nahdi8sv0adf.apps.googleusercontent.com",
         callback: handleCredentialResponse
       });
       google.accounts.id.renderButton(
         document.getElementById("signInBtn"),
-        { theme: "outline", size: "large", shape: "pill", type: "standard" }
+        { theme: "outline", size: "large", shape: "pill", type: "standard" , width: "500" , logo_alignment: "center"}
       );
       checkUser();
     }
